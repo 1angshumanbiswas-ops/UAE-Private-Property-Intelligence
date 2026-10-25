@@ -3,9 +3,11 @@
 import { json, guard, clip } from './_shared.mjs';
 
 const MODEL = () => process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+// The brief is a long JSON document and Netlify cuts functions off at ~26s, so it uses a faster model.
+const BRIEF_MODEL = () => process.env.BRIEF_MODEL || 'claude-haiku-5-5';
 
-function anthropicBody({ system, user, max_tokens, stream }) {
-  return JSON.stringify({ model: MODEL(), max_tokens, stream: !!stream, system, messages: [{ role: 'user', content: user }] });
+function anthropicBody({ system, user, max_tokens, stream, model }) {
+  return JSON.stringify({ model: model || MODEL(), max_tokens, stream: !!stream, system, messages: [{ role: 'user', content: user }] });
 }
 const headers = () => ({ 'content-type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY || '', 'anthropic-version': '2023-06-01' });
 
@@ -61,10 +63,10 @@ export default async (req) => {
       const user = 'Investor: Country=' + clip(body.country, 60) + ', Budget=' + clip(p.budget) + ', Objective=' + clip(p.objective) +
         ', Holding=' + clip(p.holding) + ', PersonalUse=' + clip(p.personalUse) + ', Risk=' + clip(p.risk) +
         ', Preference=' + clip(p.preference) + ', GoldenVisa=' + clip(p.residency) + ', Financing=' + clip(p.financing) +
-        '. Be concise: every rationale/detail/note at most 25 words, at most 3 ddPoints per property, at most 6 complianceChecklist items. Return JSON: {emirateAllocation{dubai{pct,rationale},abuDhabi{pct,rationale},rak{pct,rationale}},allocationRationale,topProperties[3]{name,emirate,developer,priceAED,grossYield,fiveYrReturn,evidenceGrade,evidenceNote,ddPoints[],lifestyleScore,lifeScores{school,hospital,airport,beach,marina,commute,privacy}},acquisitionCost{purchasePrice,transferFee,agentFee,legal,furnishing,total},complianceChecklist[]{label,status,detail},advisorBrief{readiness,priority,objections[],nextActions[]},rejectedProperties[]}';
+        '. Be very concise: every rationale/detail/note at most 15 words, exactly 2 ddPoints per property, 4 complianceChecklist items, 2 objections, 3 nextActions, 2 rejectedProperties. Return JSON: {emirateAllocation{dubai{pct,rationale},abuDhabi{pct,rationale},rak{pct,rationale}},allocationRationale,topProperties[3]{name,emirate,developer,priceAED,grossYield,fiveYrReturn,evidenceGrade,evidenceNote,ddPoints[],lifestyleScore,lifeScores{school,hospital,airport,beach,marina,commute,privacy}},acquisitionCost{purchasePrice,transferFee,agentFee,legal,furnishing,total},complianceChecklist[]{label,status,detail},advisorBrief{readiness,priority,objections[],nextActions[]},rejectedProperties[]}';
       return streamClaude({
         system: 'You are UAE_RE_AI Orchestrator. Produce a complete UAE property investment brief in JSON only. No markdown, no preamble.',
-        user, max_tokens: 3000,
+        user, max_tokens: 2200, model: BRIEF_MODEL(),
       });
     }
 
