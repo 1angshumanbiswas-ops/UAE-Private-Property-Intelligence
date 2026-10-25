@@ -8,7 +8,7 @@ export function json(body, status = 200) {
   });
 }
 
-export function guard(req, { limit = 20, windowMs = 3600_000 } = {}) {
+export function guard(req, { limit = 20, windowMs = 3600_000, key = '' } = {}) {
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
 
   // Only accept calls coming from this site (or ALLOWED_ORIGINS, comma-separated).
@@ -23,9 +23,10 @@ export function guard(req, { limit = 20, windowMs = 3600_000 } = {}) {
   // Simple per-IP rate limit.
   const ip = (req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim();
   const now = Date.now();
-  const arr = (hits.get(ip) || []).filter(t => now - t < windowMs);
+  const k = key + ':' + ip;
+  const arr = (hits.get(k) || []).filter(t => now - t < windowMs);
   if (arr.length >= limit) return json({ error: 'Rate limit reached. Please try again later.' }, 429);
-  arr.push(now); hits.set(ip, arr);
+  arr.push(now); hits.set(k, arr);
   return null;
 }
 

@@ -649,7 +649,7 @@ body::before{
         <div>
           <div class="rpt-main-title" id="rpt-title">UAE Property Intelligence Report</div>
           <div class="rpt-meta">
-            <span class="rpt-badge rb-A">Evidence Grade A &mdash; Verified</span>
+            <span class="rpt-badge rb-A" id="rpt-grade-badge">Evidence-graded</span>
             <span class="rpt-badge rb-country" id="rpt-ctag"></span>
             <span class="rpt-badge rb-gv" id="rpt-gv">&check; Golden Visa Eligible</span>
           </div>
@@ -660,6 +660,8 @@ body::before{
         </div>
       </div>
       <div style="font-size:12px;color:var(--fog);margin-top:10px;font-weight:300" id="rpt-inv-line">Loading investor profile...</div>
+      <div id="rpt-banner" style="display:none;margin-top:12px;padding:10px 14px;border:0.5px solid var(--gold);color:var(--gold);font-size:12px;line-height:1.6"></div>
+      <details id="rpt-sources" style="display:none;margin-top:12px;font-size:12px;color:var(--fog)"><summary style="cursor:pointer;color:var(--gold)">Sources used</summary><div id="rpt-sources-list" style="margin-top:8px;line-height:1.9"></div></details>
     </div>
 
     <div class="rtab-nav">
@@ -785,6 +787,7 @@ body::before{
         <div class="section-eye">Portfolio dashboard</div>
         <div class="section-h">Live monitoring &amp; recommendations</div>
         <div class="section-sub">Construction alerts &middot; hold / sell / refinance &middot; cross-emirate opportunities</div>
+        <div style="font-size:11px;color:var(--gold);margin-top:6px">Illustrative sample portfolio \u2014 not linked to real holdings or live data.</div>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn-sm-outline" onclick="goScreen('report')">&larr; Report</button>
@@ -1125,33 +1128,49 @@ async function runLiveAgents(){
 
 async function captureClientData(report,profile){
   const payload={timestamp:new Date().toISOString(),source:'UAE_RE_AI',advisor_email:'1angshuman.biswas@gmail.com',investor_name:S.userName,email:(S.contact||{}).email||'',mobile:(S.contact||{}).mobile||'',consent:'yes',country:S.country,budget:profile.budget||report.investor.budget,objective:profile.objective||report.investor.objective,holding_period:profile.holding||report.investor.holding,personal_use:profile.personalUse||report.investor.personalUse,risk_profile:profile.risk||report.investor.risk,preference:profile.preference||report.investor.preference,golden_visa:profile.residency||report.investor.residency,financing:profile.financing||report.investor.financing,consultation_timing:profile.timing||report.investor.timing,allocation_dubai:report.allocation.dubai.pct+'%',allocation_abudhabi:report.allocation.ad.pct+'%',allocation_rak:report.allocation.rak.pct+'%',property_1:report.properties[0]?.name+' \u2014 '+report.properties[0]?.price+' (Grade '+report.properties[0]?.grade+')',property_2:report.properties[1]?.name+' \u2014 '+report.properties[1]?.price+' (Grade '+report.properties[1]?.grade+')',property_3:report.properties[2]?.name+' \u2014 '+report.properties[2]?.price+' (Grade '+report.properties[2]?.grade+')',readiness_score:report.advisor.readiness+'/100',priority:report.advisor.priority,compliance_flags:report.compliance.filter(c=>c.st!=='ok').map(c=>c.lbl).join(' | ')};
+  ['property_1','property_2','property_3'].forEach(k=>{payload[k]=String(payload[k]).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&amp;/g,'&');});
+  if(report._demo){payload.property_1=payload.property_2=payload.property_3='(sample report - live research unavailable)';payload.readiness_score='';payload.priority='';payload.allocation_dubai=payload.allocation_abudhabi=payload.allocation_rak='';}
   const lr=await fetch('/.netlify/functions/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   if(!lr.ok)throw new Error('lead '+lr.status);
   showToast('\u2713 Assessment saved');
 }
 
 async function callOrchestrator(profile){
-  const r=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind:'brief',country:S.country,profile})});
-  if(!r.ok)throw new Error('AI service '+r.status);
-  const txt=(await r.text()).replace(/```json|```/g,'').trim();
-  try{return transformLiveData(JSON.parse(txt),profile);}catch(e){return buildDemoReport();}
+  const note=(t)=>{const el=document.getElementById('ag-tk-0');if(el)el.textContent=t;};
+  note('Searching DLD, developer sites and UAE news\u2026');
+  const r=await fetch('/.netlify/functions/brief-start',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:S.country,profile})});
+  if(!r.ok)throw new Error('start '+r.status);
+  const {id}=await r.json();
+  const t0=Date.now();
+  while(Date.now()-t0<270000){
+    await sleep(3500);
+    const st=await fetch('/.netlify/functions/brief-status?id='+id,{cache:'no-store'});
+    if(!st.ok&&st.status!==404)throw new Error('status '+st.status);
+    const j=await st.json();
+    if(j.status==='done')return transformLiveData(j.result,profile);
+    if(j.status==='error')throw new Error(j.error||'research failed');
+    note('Researching live sources\u2026 '+Math.round((Date.now()-t0)/1000)+'s');
+  }
+  throw new Error('research timeout');
 }
 
 const _num=(v,def=0)=>{if(typeof v==='number'&&isFinite(v))return v;const n=parseFloat(String(v??'').replace(/[^0-9.\-]/g,''));return isFinite(n)?n:def;};
+const _esc=(v)=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const _host=(u)=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return '';}};
 const _score=(v,def=80)=>{let n=_num(v,def);if(n>0&&n<=10)n=n*10;return Math.round(Math.min(100,Math.max(0,n)));};
 function transformLiveData(d,profile){
-  const rd=buildDemoReport();rd.investor.name=S.userName;rd.investor.country=S.country;
-  if(d.emirateAllocation){rd.allocation={dubai:{pct:_num(d.emirateAllocation.dubai?.pct,55),cls:'pct-dubai',name:'Dubai',tag:'Primary allocation',desc:d.emirateAllocation.dubai?.rationale||rd.allocation.dubai.desc},ad:{pct:_num(d.emirateAllocation.abuDhabi?.pct,30),cls:'pct-ad',name:'Abu Dhabi',tag:'Secondary allocation',desc:d.emirateAllocation.abuDhabi?.rationale||rd.allocation.ad.desc},rak:{pct:_num(d.emirateAllocation.rak?.pct,15),cls:'pct-rak',name:'Ras Al Khaimah',tag:'Growth exposure',desc:d.emirateAllocation.rak?.rationale||rd.allocation.rak.desc}};rd.rationale=d.allocationRationale||rd.rationale;}
-  if(d.topProperties?.length){const types=['best','safe','grow'];const bands=['prop-top-band-best','prop-top-band-safe','prop-top-band-grow'];const badges=['pb-best','pb-safe','pb-grow'];const badgeTexts=['Best overall match','Safer alternative','Higher growth'];const numerals=['I','II','III'];rd.properties=d.topProperties.slice(0,3).map((p,i)=>({type:types[i],band:bands[i],badge:badges[i],badgeText:badgeTexts[i],numeral:numerals[i],name:p.name||rd.properties[i].name,loc:p.emirate||'',dev:p.developer||'',price:'AED '+_num(p.priceAED,rd.properties[i].priceNum).toLocaleString(),priceNum:_num(p.priceAED,rd.properties[i].priceNum),metrics:[{v:_num(p.grossYield).toFixed(1)+'%',l:'Gross yield'},{v:Math.round(_num(p.fiveYrReturn))+'%',l:'5yr return'},{v:'Medium',l:'Liquidity'},{v:_score(p.lifestyleScore)+'/100',l:'Lifestyle'}],grade:p.evidenceGrade||'B',gradeText:p.evidenceNote||'',emirate:p.emirate||'',dd:(Array.isArray(p.ddPoints)&&p.ddPoints.length)?p.ddPoints.map(String):rd.properties[i].dd,lifestyle:(p.lifeScores&&typeof p.lifeScores==='object')?Object.fromEntries(Object.entries(p.lifeScores).map(([k,v])=>[k,_score(v)])):rd.properties[i].lifestyle}));}
-  if(d.complianceChecklist)rd.compliance=d.complianceChecklist.map(c=>(c.status=['ok','warn','req'].includes(c.status)?c.status:'warn',{st:c.status,lbl:c.label,dtl:c.detail,tag:c.status==='ok'?'ct-ok':c.status==='req'?'ct-req':'ct-warn',tagText:c.status==='ok'?'Confirmed':c.status==='req'?'Required':'Action required'}));
-  if(d.advisorBrief){rd.advisor.readiness=_score(d.advisorBrief.readiness);if(d.advisorBrief.priority)rd.advisor.priority=String(d.advisorBrief.priority);rd.advisor.objections=d.advisorBrief.objections||rd.advisor.objections;rd.advisor.nextActions=d.advisorBrief.nextActions||rd.advisor.nextActions;}
-  if(Array.isArray(d.rejectedProperties)&&d.rejectedProperties.length)rd.rejects=d.rejectedProperties.map(x=>typeof x==='string'?x:[x.name,x.reason].filter(Boolean).join(': '));
+  const rd=buildDemoReport();rd._demo=false;rd.asOf=_esc(d.asOf||'');rd.sources=(Array.isArray(d.sources)?d.sources:[]).filter(x=>x&&/^https:\/\//.test(String(x.url||''))).slice(0,15).map(x=>({title:_esc(x.title||_host(x.url)),url:String(x.url)}));
+  if(d.emirateAllocation){rd.allocation={dubai:{pct:_num(d.emirateAllocation.dubai?.pct,55),cls:'pct-dubai',name:'Dubai',tag:'Primary allocation',desc:_esc(d.emirateAllocation.dubai?.rationale)||rd.allocation.dubai.desc},ad:{pct:_num(d.emirateAllocation.abuDhabi?.pct,30),cls:'pct-ad',name:'Abu Dhabi',tag:'Secondary allocation',desc:_esc(d.emirateAllocation.abuDhabi?.rationale)||rd.allocation.ad.desc},rak:{pct:_num(d.emirateAllocation.rak?.pct,15),cls:'pct-rak',name:'Ras Al Khaimah',tag:'Growth exposure',desc:_esc(d.emirateAllocation.rak?.rationale)||rd.allocation.rak.desc}};rd.rationale=_esc(d.allocationRationale)||rd.rationale;}
+  if(d.topProperties?.length){const types=['best','safe','grow'];const bands=['prop-top-band-best','prop-top-band-safe','prop-top-band-grow'];const badges=['pb-best','pb-safe','pb-grow'];const badgeTexts=['Best overall match','Safer alternative','Higher growth'];const numerals=['I','II','III'];rd.properties=d.topProperties.slice(0,3).map((p,i)=>({type:types[i],band:bands[i],badge:badges[i],badgeText:badgeTexts[i],numeral:numerals[i],name:_esc(p.name)||'Unnamed project',loc:_esc(p.emirate),dev:_esc(p.developer),price:p.priceAED==null?'Price on request':'AED '+_num(p.priceAED).toLocaleString(),priceNum:_num(p.priceAED,0),metrics:[{v:p.grossYield==null?'n/a':_num(p.grossYield).toFixed(1)+'%',l:'Gross yield'},{v:p.fiveYrReturn==null?'n/a':Math.round(_num(p.fiveYrReturn))+'%',l:'5yr return'},{v:'Medium',l:'Liquidity'},{v:_score(p.lifestyleScore)+'/100',l:'Lifestyle'}],grade:['A','B','C'].includes(p.evidenceGrade)?p.evidenceGrade:'C',gradeText:_esc(p.evidenceNote)+(_host(p.sourceUrl)?' (Source: '+_esc(_host(p.sourceUrl))+')':''),emirate:_esc(p.emirate),dd:(Array.isArray(p.ddPoints)&&p.ddPoints.length)?p.ddPoints.map(_esc):rd.properties[i].dd,lifestyle:(p.lifeScores&&typeof p.lifeScores==='object')?Object.fromEntries(Object.entries(p.lifeScores).map(([k,v])=>[k,_score(v)])):rd.properties[i].lifestyle}));}
+  if(d.complianceChecklist)rd.compliance=d.complianceChecklist.map(c=>(c.status=['ok','warn','req'].includes(c.status)?c.status:'warn',{st:c.status,lbl:_esc(c.label),dtl:_esc(c.detail),tag:c.status==='ok'?'ct-ok':c.status==='req'?'ct-req':'ct-warn',tagText:c.status==='ok'?'Confirmed':c.status==='req'?'Required':'Action required'}));
+  if(d.advisorBrief){rd.advisor.readiness=_score(d.advisorBrief.readiness);if(d.advisorBrief.priority)rd.advisor.priority=_esc(d.advisorBrief.priority);if(Array.isArray(d.advisorBrief.objections)&&d.advisorBrief.objections.length)rd.advisor.objections=d.advisorBrief.objections.map(_esc);if(Array.isArray(d.advisorBrief.nextActions)&&d.advisorBrief.nextActions.length)rd.advisor.nextActions=d.advisorBrief.nextActions.map(_esc);}
+  if(Array.isArray(d.rejectedProperties)&&d.rejectedProperties.length)rd.rejects=d.rejectedProperties.map(x=>_esc(typeof x==='string'?x:[x.name,x.reason].filter(Boolean).join(': ')));
   if(d.acquisitionCost)rd.acquisition={price:_num(d.acquisitionCost.purchasePrice,rd.acquisition.price),transfer:_num(d.acquisitionCost.transferFee,rd.acquisition.transfer),agent:_num(d.acquisitionCost.agentFee,rd.acquisition.agent),legal:_num(d.acquisitionCost.legal,rd.acquisition.legal),furnishing:_num(d.acquisitionCost.furnishing,rd.acquisition.furnishing),total:_num(d.acquisitionCost.total,rd.acquisition.total)};
   return rd;
 }
 
 function buildProfileFromAnswers(){const keys=['objective','budget','holding','personalUse','risk','preference','residency','financing','timing'];const res={};keys.forEach((k,i)=>{const idx=S.answers[k];res[k]=(idx!==undefined&&idx>=0)?WIZ[i].opts[idx]?.lbl:'Not specified';});return res;}
-function buildDemoReport(){const r=_buildDemoBase();personaliseReport(r);return r;}
+function buildDemoReport(){const r=_buildDemoBase();personaliseReport(r);r._demo=true;return r;}
 function personaliseReport(r){
   if(S.userName&&S.userName!=='Valued Investor')r.investor.name=S.userName;
   r.investor.country=S.country;
@@ -1163,6 +1182,10 @@ function renderReport(d){
   const inv=d.investor;
   document.getElementById('rpt-title').textContent='Private Investment Brief \u2014 '+(inv.name||S.userName);
   document.getElementById('rpt-ctag').textContent=S.country;
+  const _bn=document.getElementById('rpt-banner'),_bg=document.getElementById('rpt-grade-badge'),_sr=document.getElementById('rpt-sources'),_sl=document.getElementById('rpt-sources-list');
+  if(d._demo){_bn.style.display='';_bn.textContent=(S.mode==='demo'?'Demo mode':'Live research was unavailable')+' \u2014 this is an illustrative sample report, not live market data. Properties, prices and yields shown are examples only.';_bg.textContent='Illustrative sample';_sr.style.display='none';}
+  else{_bn.style.display='';_bn.textContent='Researched '+(d.asOf||'today')+' from DLD, developer websites and UAE news. Indicative only \u2014 verify every figure with the developer or DLD before committing.';_bg.textContent='Live research \u00b7 '+(d.sources||[]).length+' sources';
+    if((d.sources||[]).length){_sr.style.display='';_sl.innerHTML=d.sources.map(x=>'<div>\u2022 <a href="'+x.url.replace(/"/g,'%22')+'" target="_blank" rel="noopener noreferrer" style="color:var(--gold)">'+x.title+'</a></div>').join('');}else{_sr.style.display='none';}}
   const c=getCurrency();
   const currLabel=c.code!=='AED'?' \u00b7 Prices shown in AED + '+c.code:'';
   document.getElementById('rpt-inv-line').textContent=(inv.name||S.userName)+' \u00b7 '+inv.budget+' \u00b7 '+inv.objective+' \u00b7 '+inv.holding+currLabel;
@@ -1299,7 +1322,7 @@ function downloadMemo(){
   const cc=getCurrency();
   const fxNote=cc.code!=='AED'?'\nCurrency note: 1 AED \u2248 '+cc.rate+' '+cc.code+' (indicative). Transaction settled in AED.':'';
   const propsWithLocal=d.properties.map((p,i)=>{const loc=toLocal(p.priceNum);return (i+1)+'. '+p.name+' \u2014 '+p.price+(loc?' ('+loc+' '+cc.code+')':'')+' (Evidence Grade '+p.grade+')';});
-  const txt='UAE_RE_AI \u2014 PRIVATE INVESTMENT BRIEF\n'+'='.repeat(54)+'\nInvestor: '+(d.investor.name||S.userName)+'\nCountry: '+S.country+'\nBase currency: AED'+(cc.code!=='AED'?' / '+cc.code:'')+'\nBudget: '+d.investor.budget+'\nObjective: '+d.investor.objective+'\n\nEMIRATE ALLOCATION\nDubai: '+d.allocation.dubai.pct+'% \u00b7 Abu Dhabi: '+d.allocation.ad.pct+'% \u00b7 RAK: '+d.allocation.rak.pct+'%\n'+d.rationale+'\n\nPROPERTY SHORTLIST\n'+propsWithLocal.join('\n')+'\n\nCOMPLIANCE ITEMS REQUIRING ACTION\n'+d.compliance.filter(c=>c.st!=='ok').map(c=>'- '+c.lbl+': '+c.tagText).join('\n')+'\n\nADVISOR READINESS: '+d.advisor.readiness+'/100\nPRIORITY: '+d.advisor.priority+fxNote+'\n\nGenerated by UAE_RE_AI \u2014 Private Property Intelligence\n'+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'\nStrictly confidential. Not financial, legal or tax advice.';
+  const txt='UAE_RE_AI \u2014 PRIVATE INVESTMENT BRIEF\n'+'='.repeat(54)+'\nInvestor: '+(d.investor.name||S.userName)+'\nCountry: '+S.country+'\nBase currency: AED'+(cc.code!=='AED'?' / '+cc.code:'')+'\nBudget: '+d.investor.budget+'\nObjective: '+d.investor.objective+'\n\nEMIRATE ALLOCATION\nDubai: '+d.allocation.dubai.pct+'% \u00b7 Abu Dhabi: '+d.allocation.ad.pct+'% \u00b7 RAK: '+d.allocation.rak.pct+'%\n'+d.rationale+'\n\nPROPERTY SHORTLIST\n'+propsWithLocal.join('\n')+'\n\nCOMPLIANCE ITEMS REQUIRING ACTION\n'+d.compliance.filter(c=>c.st!=='ok').map(c=>'- '+c.lbl+': '+c.tagText).join('\n')+'\n\nADVISOR READINESS: '+d.advisor.readiness+'/100\nPRIORITY: '+d.advisor.priority+fxNote+'\n\nGenerated by UAE_RE_AI \u2014 Private Property Intelligence\n'+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'\nStrictly confidential. Not financial, legal or tax advice.'+(d._demo?'\nNOTE: Illustrative sample, not live market data.\n':'')+((d.sources||[]).length?'\nSOURCES (researched '+(d.asOf||'')+')\n'+d.sources.map(x=>'- '+x.title+' '+x.url).join('\n')+'\n':'');
   const a=document.createElement('a');
   a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
   a.download='UAE_RE_AI_Private_Brief_'+Date.now()+'.txt';
