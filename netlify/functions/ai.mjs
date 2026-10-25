@@ -25,8 +25,12 @@ function streamClaude(args) {
     async start(controller) {
       try {
         if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
-        const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: headers(), body: anthropicBody({ ...args, stream: true }) });
-        if (!r.ok || !r.body) throw new Error('Anthropic error ' + r.status);
+        let r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: headers(), body: anthropicBody({ ...args, stream: true }) });
+        if (!r.ok && args.model) { // fast model unavailable -> fall back to the default model
+          console.error('brief model failed', r.status, await r.text().catch(() => ''));
+          r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: headers(), body: anthropicBody({ ...args, model: undefined, stream: true }) });
+        }
+        if (!r.ok || !r.body) throw new Error('Anthropic error ' + r.status + ' ' + (await r.text().catch(() => '')).slice(0, 200));
         const reader = r.body.getReader();
         let buf = '';
         for (;;) {
@@ -44,7 +48,7 @@ function streamClaude(args) {
           }
         }
         controller.close();
-      } catch (e) { console.error(e); controller.error(e); }
+      } catch (e) { console.error(e); controller.enqueue(enc.encode('\n__STREAM_ERROR__ ' + String(e.message || e))); controller.close(); }
     },
   });
   return new Response(body, { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
