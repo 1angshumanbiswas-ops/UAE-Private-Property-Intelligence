@@ -7,7 +7,7 @@ const MODEL = () => process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 const BRIEF_MODEL = () => process.env.BRIEF_MODEL || 'claude-haiku-5-5';
 
 function anthropicBody({ system, user, max_tokens, stream, model }) {
-  return JSON.stringify({ model: model || MODEL(), max_tokens, stream: !!stream, thinking: { type: 'disabled' }, system, messages: [{ role: 'user', content: user }] });
+  return JSON.stringify({ model: model || MODEL(), max_tokens, stream: !!stream, ...(model ? { thinking: { type: 'disabled' } } : {}), system, messages: [{ role: 'user', content: user }] });
 }
 const headers = () => ({ 'content-type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY || '', 'anthropic-version': '2023-06-01' });
 
