@@ -1133,8 +1133,7 @@ async function captureClientData(report,profile){
 async function callOrchestrator(profile){
   const r=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind:'brief',country:S.country,profile})});
   if(!r.ok)throw new Error('AI service '+r.status);
-  const data=await r.json();
-  const txt=(data.text||'').replace(/```json|```/g,'').trim();
+  const txt=(await r.text()).replace(/```json|```/g,'').trim();
   try{return transformLiveData(JSON.parse(txt),profile);}catch(e){return buildDemoReport();}
 }
 
@@ -1150,7 +1149,13 @@ function transformLiveData(d,profile){
 }
 
 function buildProfileFromAnswers(){const keys=['objective','budget','holding','personalUse','risk','preference','residency','financing','timing'];const res={};keys.forEach((k,i)=>{const idx=S.answers[k];res[k]=(idx!==undefined&&idx>=0)?WIZ[i].opts[idx]?.lbl:'Not specified';});return res;}
-function buildDemoReport(){return JSON.parse(JSON.stringify({investor:DEMO.investor,allocation:DEMO.allocation,rationale:DEMO.rationale,properties:DEMO.properties,rejects:DEMO.rejects,acquisition:DEMO.acquisition,compliance:DEMO.compliance,advisor:DEMO.advisor,portfolio:DEMO.portfolio}));}
+function buildDemoReport(){const r=_buildDemoBase();personaliseReport(r);return r;}
+function personaliseReport(r){
+  if(S.userName&&S.userName!=='Valued Investor')r.investor.name=S.userName;
+  r.investor.country=S.country;
+  try{const p=buildProfileFromAnswers();['objective','budget','holding','personalUse','risk','preference','residency','financing','timing'].forEach(k=>{if(p[k]&&p[k]!=='Not specified')r.investor[k]=p[k];});}catch(e){}
+}
+function _buildDemoBase(){return JSON.parse(JSON.stringify({investor:DEMO.investor,allocation:DEMO.allocation,rationale:DEMO.rationale,properties:DEMO.properties,rejects:DEMO.rejects,acquisition:DEMO.acquisition,compliance:DEMO.compliance,advisor:DEMO.advisor,portfolio:DEMO.portfolio}));}
 
 function renderReport(d){
   const inv=d.investor;

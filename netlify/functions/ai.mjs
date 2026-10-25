@@ -1,18 +1,51 @@
 // Server-side proxy to the Anthropic API. The key lives only in Netlify env vars.
+// The brief is streamed so the connection never sits idle (Netlify drops idle responses at ~30s).
 import { json, guard, clip } from './_shared.mjs';
 
 const MODEL = () => process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 
-async function callClaude({ system, user, max_tokens }) {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error('ANTHROPIC_API_KEY not configured');
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: MODEL(), max_tokens, system, messages: [{ role: 'user', content: user }] }),
-  });
+function anthropicBody({ system, user, max_tokens, stream }) {
+  return JSON.stringify({ model: MODEL(), max_tokens, stream: !!stream, system, messages: [{ role: 'user', content: user }] });
+}
+const headers = () => ({ 'content-type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY || '', 'anthropic-version': '2023-06-01' });
+
+async function callClaude(args) {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+  const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: headers(), body: anthropicBody(args) });
   if (!r.ok) throw new Error('Anthropic error ' + r.status);
   return r.json();
+}
+
+// Streams only the text deltas back to the browser as plain text.
+function streamClaude(args) {
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const body = new ReadableStream({
+    async start(controller) {
+      try {
+        if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+        const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: headers(), body: anthropicBody({ ...args, stream: true }) });
+        if (!r.ok || !r.body) throw new Error('Anthropic error ' + r.status);
+        const reader = r.body.getReader();
+        let buf = '';
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let i;
+          while ((i = buf.indexOf('\n')) >= 0) {
+            const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+            if (!line.startsWith('data:')) continue;
+            try {
+              const ev = JSON.parse(line.slice(5));
+              if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') controller.enqueue(enc.encode(ev.delta.text));
+            } catch { /* ignore keep-alive / partial lines */ }
+          }
+        }
+        controller.close();
+      } catch (e) { console.error(e); controller.error(e); }
+    },
+  });
+  return new Response(body, { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
 }
 
 export default async (req) => {
@@ -25,16 +58,14 @@ export default async (req) => {
   try {
     if (body.kind === 'brief') {
       const p = body.profile || {};
-      const country = clip(body.country, 60);
-      const user = 'Investor: Country=' + country + ', Budget=' + clip(p.budget) + ', Objective=' + clip(p.objective) +
+      const user = 'Investor: Country=' + clip(body.country, 60) + ', Budget=' + clip(p.budget) + ', Objective=' + clip(p.objective) +
         ', Holding=' + clip(p.holding) + ', PersonalUse=' + clip(p.personalUse) + ', Risk=' + clip(p.risk) +
         ', Preference=' + clip(p.preference) + ', GoldenVisa=' + clip(p.residency) + ', Financing=' + clip(p.financing) +
-        '. Return JSON: {emirateAllocation{dubai{pct,rationale},abuDhabi{pct,rationale},rak{pct,rationale}},allocationRationale,topProperties[3]{name,emirate,developer,priceAED,grossYield,fiveYrReturn,evidenceGrade,evidenceNote,ddPoints[],lifestyleScore,lifeScores{school,hospital,airport,beach,marina,commute,privacy}},acquisitionCost{purchasePrice,transferFee,agentFee,legal,furnishing,total},complianceChecklist[]{label,status,detail},advisorBrief{readiness,priority,objections[],nextActions[]},rejectedProperties[]}';
-      const data = await callClaude({
+        '. Be concise: every rationale/detail/note at most 25 words, at most 3 ddPoints per property, at most 6 complianceChecklist items. Return JSON: {emirateAllocation{dubai{pct,rationale},abuDhabi{pct,rationale},rak{pct,rationale}},allocationRationale,topProperties[3]{name,emirate,developer,priceAED,grossYield,fiveYrReturn,evidenceGrade,evidenceNote,ddPoints[],lifestyleScore,lifeScores{school,hospital,airport,beach,marina,commute,privacy}},acquisitionCost{purchasePrice,transferFee,agentFee,legal,furnishing,total},complianceChecklist[]{label,status,detail},advisorBrief{readiness,priority,objections[],nextActions[]},rejectedProperties[]}';
+      return streamClaude({
         system: 'You are UAE_RE_AI Orchestrator. Produce a complete UAE property investment brief in JSON only. No markdown, no preamble.',
-        user, max_tokens: 4000,
+        user, max_tokens: 3000,
       });
-      return json({ text: data.content?.[0]?.text || '' });
     }
 
     if (body.kind === 'chat') {
