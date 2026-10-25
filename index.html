@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAE Private Property Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#060810;--surface:#0C1422;--card:#111928;--lift:#17243A;
+  --gold:#B8965A;--champ:#D4B070;--gilded:rgba(184,150,90,0.08);--wire:rgba(184,150,90,0.14);
+  --ivory:#EDE8DF;--fog:#6A7E96;--mist:#3A4A5E;--frost:rgba(237,232,223,0.06);
+  --teal:#1C9A8A;--amber:#C88A1A;--rose:#C04848;--cobalt:#2E72B8;
+  --pur:#7A62D8;
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:"DM Sans",system-ui,sans-serif;
+  --r:8px;--rsm:5px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--void);color:var(--ivory);min-height:100vh;font-size:14px;line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* === TOPBAR === */
+.tb{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,8,16,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:0.5px solid var(--wire);height:58px;display:flex;align-items:center;padding:0 28px;gap:16px}
+.logo{display:flex;align-items:center;gap:11px;cursor:pointer;flex-shrink:0}
+.logo-gem{width:34px;height:34px;border:0.5px solid var(--wire);border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--gilded);flex-shrink:0;position:relative}
+.logo-gem::after{content:"";position:absolute;inset:3px;border-radius:50%;border:0.5px solid rgba(184,150,90,0.3)}
+.logo-diamond{width:10px;height:10px;background:var(--gold);transform:rotate(45deg)}
+.logo-text{display:flex;flex-direction:column}
+.logo-primary{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:2.5px;color:var(--ivory);text-transform:uppercase}
+.logo-sub{font-family:var(--sans);font-size:9px;font-weight:300;letter-spacing:2px;color:var(--fog);text-transform:uppercase;margin-top:1px}
+.tb-nav{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
+.tb-nl{font-size:11px;font-weight:400;letter-spacing:1px;color:var(--fog);cursor:pointer;padding:5px 12px;border-radius:var(--rsm);transition:all .2s;text-transform:uppercase;display:none}
+.tb-nl:hover,.tb-nl.on{color:var(--gold)}
+.tb-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.mode-wrap{display:flex;align-items:center;background:var(--card);border:0.5px solid var(--wire);border-radius:20px;padding:3px}
+.mode-opt{padding:4px 14px;border-radius:16px;font-size:10px;font-weight:500;cursor:pointer;color:var(--fog);transition:all .2s;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--sans)}
+.mode-opt.on{background:var(--gold);color:#000}
+.tb-btn{padding:6px 14px;border-radius:var(--rsm);border:0.5px solid var(--wire);background:transparent;color:var(--fog);font-size:10px;letter-spacing:1px;cursor:pointer;font-family:var(--sans);font-weight:500;text-transform:uppercase;transition:all .2s}
+.tb-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* SIGNATURE: gold line draw animation */
+.gold-rule{height:0.5px;background:var(--gold);width:0%;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);margin:0}
+.gold-rule.drawn{width:100%}
+
+/* === SCREENS === */
+.scr{display:none;padding-top:58px;min-height:100vh}
+.scr.on{display:block}
+
+/* === HERO / LANDING === */
+.hero{min-height:calc(100vh - 58px);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:60px 10% 60px 10%}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 80% 40%,rgba(184,150,90,0.04) 0%,transparent 65%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(30,80,140,0.06) 0%,transparent 60%),var(--void);pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(184,150,90,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(184,150,90,0.03) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
+.hero-content{position:relative;z-index:1;max-width:680px}
+.hero-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.hero-eye-line{width:32px;height:0.5px;background:var(--gold)}
+.hero-eye-text{font-size:9px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:500}
+.hero-h1{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:300;line-height:1.1;color:var(--ivory);margin-bottom:6px}
+.hero-h1 em{font-style:italic;color:var(--gold)}
+.hero-h2{font-family:var(--serif);font-size:clamp(30px,4vw,52px);font-weight:300;line-height:1.1;color:var(--ivory);margin-bottom:24px}
+.hero-sub{font-size:14px;font-weight:300;color:var(--fog);max-width:440px;line-height:1.8;margin-bottom:44px}
+.hero-divider{width:48px;height:0.5px;background:var(--wire);margin-bottom:36px}
+.hero-cta-row{display:flex;align-items:center;gap:16px;margin-bottom:56px;flex-wrap:wrap}
+.btn-primary{padding:14px 36px;background:var(--gold);color:#000;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;transition:all .25s}
+.btn-primary:hover{background:var(--champ);transform:translateY(-1px)}
+.btn-outline{padding:13px 28px;background:transparent;color:var(--fog);font-family:var(--sans);font-size:10px;font-weight:400;letter-spacing:2px;text-transform:uppercase;border:0.5px solid var(--mist);border-radius:2px;cursor:pointer;transition:all .25s}
+.btn-outline:hover{border-color:var(--wire);color:var(--ivory)}
+.hero-disclaimer{font-size:10px;color:var(--mist);letter-spacing:0.5px;line-height:1.7}
+.hero-stats{display:flex;gap:48px;margin-bottom:48px;flex-wrap:wrap}
+.hero-stat .num{font-family:var(--serif);font-size:28px;font-weight:400;color:var(--gold)}
+.hero-stat .lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-top:3px}
+.hero-right{position:absolute;right:8%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:1}
+
+/* Country selector — editorial style */
+.country-scroll{display:flex;gap:0;margin-top:4px}
+.ctr-card{flex-shrink:0;width:140px;padding:20px 16px;cursor:pointer;transition:all .25s;border:0.5px solid transparent;border-right:0.5px solid var(--wire);position:relative;overflow:hidden}
+.ctr-card:first-child{border-left:0.5px solid var(--wire)}
+.ctr-card:hover,.ctr-card.sel{border-bottom-color:var(--gold);background:var(--gilded)}
+.ctr-card.sel{border-bottom-color:var(--gold);border-bottom-width:1.5px}
+.ctr-code{font-family:var(--serif);font-size:28px;font-weight:300;font-style:italic;color:var(--wire);line-height:1;margin-bottom:10px;transition:color .25s}
+.ctr-card:hover .ctr-code,.ctr-card.sel .ctr-code{color:var(--gold)}
+.ctr-name{font-size:11px;font-weight:500;color:var(--ivory);letter-spacing:0.5px;margin-bottom:4px}
+.ctr-desc{font-size:9px;color:var(--fog);letter-spacing:0.5px;line-height:1.5}
+.ctr-sel-mark{position:absolute;bottom:0;left:0;right:0;height:1.5px;background:var(--gold);transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.ctr-card.sel .ctr-sel-mark{transform:scaleX(1)}
+
+/* Country scroll wrapper */
+.ctr-wrap{position:relative;overflow:hidden}
+.ctr-wrap::after{content:"";position:absolute;top:0;right:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,var(--void));pointer-events:none;z-index:2}
+
+/* === ASSESSMENT === */
+.wiz-outer{min-height:calc(100vh - 58px);display:flex;flex-direction:column}
+.wiz-progress-bar{height:1px;background:var(--surface);position:relative}
+.wiz-progress-fill{height:100%;background:var(--gold);transition:width .6s cubic-bezier(0.16,1,0.3,1);position:absolute;inset:0;right:auto}
+.wiz-body{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:700px;margin:0 auto;padding:60px 28px;width:100%}
+.wiz-step-eye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.wiz-step-eye::before{content:"";display:inline-block;width:20px;height:0.5px;background:var(--gold)}
+.wiz-q{font-family:var(--serif);font-size:clamp(24px,3vw,38px);font-weight:300;color:var(--ivory);margin-bottom:8px;line-height:1.2}
+.wiz-hint{font-size:12px;color:var(--fog);margin-bottom:36px;line-height:1.7;font-weight:300}
+.wiz-opts{display:flex;flex-direction:column;gap:1px}
+.wiz-opt{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--card);border-left:2px solid transparent;cursor:pointer;transition:all .2s;border-top:0.5px solid var(--frost);gap:12px}
+.wiz-opt:first-child{border-top:none}
+.wiz-opt:hover{background:var(--lift);border-left-color:var(--wire)}
+.wiz-opt.sel{background:var(--lift);border-left-color:var(--gold)}
+.wiz-opt-left{display:flex;align-items:center;gap:14px}
+.wiz-opt-ic{font-size:18px;flex-shrink:0;width:26px;text-align:center}
+.wiz-opt-lbl{font-size:13px;font-weight:400;color:var(--ivory)}
+.wiz-opt-ds{font-size:11px;color:var(--fog);margin-top:1px}
+.wiz-opt-arrow{font-size:11px;color:var(--mist);opacity:0;transition:opacity .2s}
+.wiz-opt:hover .wiz-opt-arrow,.wiz-opt.sel .wiz-opt-arrow{opacity:1;color:var(--gold)}
+.wiz-nav-bar{padding:24px 28px;display:flex;justify-content:space-between;align-items:center;border-top:0.5px solid var(--wire);max-width:700px;margin:0 auto;width:100%}
+.wiz-back-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog);cursor:pointer;background:none;border:none;font-family:var(--sans);padding:0;transition:color .2s}
+.wiz-back-btn:hover{color:var(--ivory)}
+.wiz-fwd-row{display:flex;align-items:center;gap:16px}
+.wiz-skip-lnk{font-size:10px;letter-spacing:1px;color:var(--mist);cursor:pointer;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px}
+
+/* === PROCESSING === */
+.proc-outer{min-height:calc(100vh - 58px);display:flex;align-items:center;justify-content:center;padding:60px 28px}
+.proc-inner{max-width:440px;width:100%}
+.proc-eye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.proc-eye::before{content:"";display:inline-block;width:20px;height:0.5px;background:var(--gold)}
+.proc-h{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--ivory);margin-bottom:6px}
+.proc-sub{font-size:12px;color:var(--fog);margin-bottom:40px;font-weight:300;line-height:1.7}
+.ag-track{position:relative;padding-left:24px}
+.ag-track::before{content:"";position:absolute;left:5px;top:12px;bottom:12px;width:0.5px;background:var(--mist)}
+.ag-item{position:relative;display:flex;align-items:flex-start;gap:14px;padding:10px 0}
+.ag-dot{width:11px;height:11px;border-radius:50%;background:var(--mist);flex-shrink:0;margin-top:4px;position:relative;z-index:1;border:1.5px solid var(--surface);transition:all .3s}
+.ag-item.run .ag-dot{background:var(--gold);animation:agpulse 1.2s ease-in-out infinite}
+.ag-item.done .ag-dot{background:var(--teal);border-color:var(--teal)}
+@keyframes agpulse{0%,100%{box-shadow:0 0 0 0 rgba(184,150,90,0.4)}50%{box-shadow:0 0 0 6px rgba(184,150,90,0)}}
+.ag-label{font-size:12px;font-weight:400;color:var(--fog);transition:color .3s}
+.ag-item.run .ag-label{color:var(--ivory)}
+.ag-item.done .ag-label{color:var(--teal)}
+.ag-task{font-size:10px;color:var(--mist);margin-top:1px;transition:color .3s}
+.ag-item.run .ag-task{color:var(--fog)}
+.spin{width:9px;height:9px;border:1.5px solid rgba(184,150,90,0.3);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* === REPORT === */
+.rpt-outer{max-width:960px;margin:0 auto;padding:48px 28px}
+.rpt-masthead{margin-bottom:40px;padding-bottom:32px;border-bottom:0.5px solid var(--wire)}
+.rpt-stamp{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.rpt-stamp-text{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.rpt-stamp-line{flex:1;height:0.5px;background:var(--wire)}
+.rpt-stamp-conf{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mist)}
+.rpt-main-title{font-family:var(--serif);font-size:clamp(22px,3vw,36px);font-weight:300;color:var(--ivory);margin-bottom:8px}
+.rpt-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.rpt-badge{font-size:10px;font-weight:500;letter-spacing:0.5px;padding:4px 12px;border-radius:2px}
+.rb-A{background:rgba(28,154,138,0.1);color:var(--teal);border:0.5px solid rgba(28,154,138,0.25)}
+.rb-B{background:rgba(46,114,184,0.1);color:var(--cobalt);border:0.5px solid rgba(46,114,184,0.25)}
+.rb-country{background:var(--gilded);color:var(--gold);border:0.5px solid var(--wire)}
+.rb-gv{background:rgba(28,154,138,0.08);color:var(--teal);border:0.5px solid rgba(28,154,138,0.2);display:none}
+.rpt-masthead-r{display:flex;flex-direction:column;gap:6px}
+.rpt-actions{display:flex;gap:8px;margin-top:12px}
+.btn-sm-outline{padding:7px 16px;background:transparent;color:var(--fog);font-family:var(--sans);font-size:10px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;border:0.5px solid var(--mist);border-radius:2px;cursor:pointer;transition:all .2s}
+.btn-sm-outline:hover{border-color:var(--wire);color:var(--ivory)}
+.btn-sm-gold{padding:7px 16px;background:var(--gold);color:#000;font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;transition:all .2s}
+.btn-sm-gold:hover{background:var(--champ)}
+
+/* Report tab navigation — minimal pill row */
+.rtab-nav{display:flex;gap:2px;margin-bottom:32px;overflow-x:auto;padding-bottom:1px;border-bottom:0.5px solid var(--wire)}
+.rtab-btn{padding:8px 18px;background:transparent;border:none;font-family:var(--sans);font-size:11px;font-weight:400;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist);cursor:pointer;transition:all .2s;white-space:nowrap;border-bottom:1px solid transparent;margin-bottom:-0.5px}
+.rtab-btn:hover{color:var(--fog)}
+.rtab-btn.on{color:var(--gold);border-bottom-color:var(--gold)}
+.rtab-panel{display:none}.rtab-panel.on{display:block}
+
+/* Allocation */
+.alloc-emirates{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--wire);border:0.5px solid var(--wire);margin-bottom:24px}
+.alloc-em{background:var(--card);padding:24px 20px}
+.alloc-em-pct{font-family:var(--serif);font-size:44px;font-weight:300;line-height:1;margin-bottom:4px}
+.pct-dubai{color:var(--gold)}.pct-ad{color:var(--teal)}.pct-rak{color:var(--pur)}
+.alloc-em-name{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ivory);margin-bottom:4px;font-weight:500}
+.alloc-em-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog);margin-bottom:12px}
+.alloc-em-bar{height:1.5px;background:var(--mist);margin-bottom:12px;position:relative}
+.alloc-em-bar-fill{height:100%;position:absolute;left:0;top:0;transition:width 1.2s cubic-bezier(0.16,1,0.3,1)}
+.alloc-em-desc{font-size:12px;color:var(--fog);line-height:1.7;font-weight:300}
+.alloc-rationale-box{background:var(--card);border:0.5px solid var(--wire);padding:20px 24px;margin-bottom:28px}
+.alloc-rationale-box .arb-eye{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.alloc-rationale-box p{font-family:var(--serif);font-size:15px;font-weight:300;color:var(--fog);line-height:1.85;font-style:italic}
+
+/* Property cards — editorial */
+.prop-list{display:flex;flex-direction:column;gap:20px}
+.prop-card{position:relative;background:var(--card);border:0.5px solid var(--wire);overflow:hidden}
+.prop-card.best{border-top-color:var(--gold);border-top-width:1.5px}
+.prop-card.safe{border-top-color:var(--teal);border-top-width:1.5px}
+.prop-card.grow{border-top-color:var(--pur);border-top-width:1.5px}
+.prop-numeral{position:absolute;top:-8px;right:20px;font-family:var(--serif);font-size:100px;font-weight:300;color:rgba(184,150,90,0.04);line-height:1;pointer-events:none;user-select:none}
+.prop-top-band{height:100px;position:relative;overflow:hidden}
+.prop-top-band-best{background:linear-gradient(135deg,#0A1828 0%,#1A2E50 50%,#0D1A30 100%)}
+.prop-top-band-safe{background:linear-gradient(135deg,#081820 0%,#0F2830 50%,#081820 100%)}
+.prop-top-band-grow{background:linear-gradient(135deg,#0F0A24 0%,#1A1040 50%,#0F0A20 100%)}
+.prop-top-band::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(184,150,90,0.06) 0%,transparent 70%)}
+.prop-band-label{position:absolute;bottom:12px;left:20px;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(237,232,223,0.3);font-weight:300}
+.prop-band-badge{position:absolute;top:12px;left:20px;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:1px}
+.pb-best{color:var(--gold);border:0.5px solid rgba(184,150,90,0.4)}
+.pb-safe{color:var(--teal);border:0.5px solid rgba(28,154,138,0.4)}
+.pb-grow{color:var(--pur);border:0.5px solid rgba(122,98,216,0.4)}
+.prop-body{padding:20px 24px}
+.prop-name{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ivory);margin-bottom:4px}
+.prop-loc-dev{font-size:11px;color:var(--fog);letter-spacing:0.5px;margin-bottom:18px}
+.prop-price-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:20px;padding-bottom:16px;border-bottom:0.5px solid var(--wire)}
+.prop-price{font-family:var(--serif);font-size:28px;font-weight:400;color:var(--ivory)}
+.prop-price-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog);margin-bottom:5px}
+.prop-metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--mist);border:0.5px solid var(--mist);margin-bottom:16px}
+.pm-cell{background:var(--card);padding:12px 8px;text-align:center}
+.pm-val{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ivory)}
+.pm-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mist);margin-top:3px}
+.ev-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:0.5px solid var(--frost)}
+.ev-badge{font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:1px}
+.ev-A{background:rgba(28,154,138,0.08);color:var(--teal);border:0.5px solid rgba(28,154,138,0.2)}
+.ev-B{background:rgba(46,114,184,0.08);color:var(--cobalt);border:0.5px solid rgba(46,114,184,0.2)}
+.ev-C{background:rgba(200,136,26,0.08);color:var(--amber);border:0.5px solid rgba(200,136,26,0.2)}
+.ev-text{font-size:11px;color:var(--fog);font-weight:300}
+.prop-dd-list{margin-top:14px;background:rgba(255,255,255,0.02);padding:12px 16px}
+.prop-dd-eye{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mist);margin-bottom:8px}
+.prop-dd-item{font-size:11px;color:var(--fog);padding:3px 0;font-weight:300}
+.prop-rejects-box{margin-top:24px;padding:16px 20px;border:0.5px solid rgba(192,72,72,0.15);background:rgba(192,72,72,0.03)}
+.prj-eye{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--rose);opacity:.7;margin-bottom:8px}
+.prj-item{font-size:11px;color:var(--mist);padding:3px 0;font-weight:300}
+
+/* Financial tab */
+.fin-acq-table{width:100%;border-collapse:collapse;margin-bottom:20px}
+.fin-acq-table td{padding:10px 0;border-bottom:0.5px solid var(--frost);font-size:13px;font-weight:300}
+.fin-acq-table td:last-child{text-align:right;color:var(--ivory)}
+.fin-acq-table tr:last-child td{border-bottom:none;font-family:var(--serif);font-size:16px;font-weight:400;padding-top:14px}
+.fin-acq-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.fin-acq-wrap{background:var(--card);border:0.5px solid var(--wire);padding:20px 24px;margin-bottom:20px}
+.slider-panel{background:var(--card);border:0.5px solid var(--wire);padding:16px 24px;margin-bottom:12px}
+.sl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sl-key{font-size:11px;color:var(--fog);letter-spacing:0.5px}
+.sl-val{font-family:var(--serif);font-size:15px;color:var(--gold)}
+input[type=range]{width:100%;appearance:none;-webkit-appearance:none;height:1px;background:var(--mist);border-radius:1px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--card)}
+.fin-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--wire);border:0.5px solid var(--wire);margin-bottom:16px}
+.fin-sc{background:var(--card);padding:20px 16px}
+.fin-sc-eye{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+.fc-conservative .fin-sc-eye{color:var(--amber)}.fc-base .fin-sc-eye{color:var(--cobalt)}.fc-optimistic .fin-sc-eye{color:var(--teal)}
+.fin-sc-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--frost);font-size:12px}
+.fin-sc-row:last-child{border-bottom:none;padding-top:10px}
+.fsk{color:var(--fog);font-weight:300}.fsv{color:var(--ivory)}
+.fin-total-val{font-family:var(--serif);font-size:20px}
+.fc-conservative .fin-total-val{color:var(--amber)}.fc-base .fin-total-val{color:var(--cobalt)}.fc-optimistic .fin-total-val{color:var(--teal)}
+.fin-note{font-size:10px;color:var(--mist);line-height:1.7;font-weight:300}
+
+/* Lifestyle */
+.ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--wire);border:0.5px solid var(--wire)}
+.ls-col{background:var(--card);padding:20px}
+.ls-prop-name{font-family:var(--serif);font-size:15px;font-weight:400;color:var(--ivory);margin-bottom:2px}
+.ls-emirate{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:16px}
+.ls-score-big{font-family:var(--serif);font-size:40px;font-weight:300;color:var(--gold);line-height:1;margin-bottom:16px}
+.ls-score-unit{font-size:14px;color:var(--fog)}
+.ls-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ls-key{font-size:10px;letter-spacing:0.5px;color:var(--fog);width:72px;flex-shrink:0}
+.ls-track{flex:1;height:1px;background:var(--mist)}
+.ls-fill{height:100%;background:var(--gold)}
+.ls-num{font-size:10px;color:var(--mist);width:18px;text-align:right}
+
+/* Compliance */
+.comp-list{display:flex;flex-direction:column;gap:1px;background:var(--wire)}
+.comp-row{background:var(--card);padding:14px 20px;display:flex;align-items:flex-start;gap:14px}
+.comp-indicator{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ci-ok{background:var(--teal)}.ci-warn{background:var(--amber)}.ci-req{background:var(--rose)}
+.comp-right{flex:1}
+.comp-lbl{font-size:13px;font-weight:400;color:var(--ivory);margin-bottom:3px}
+.comp-dtl{font-size:11px;color:var(--fog);line-height:1.65;font-weight:300}
+.comp-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;margin-top:5px;border-radius:1px}
+.ct-ok{background:rgba(28,154,138,0.08);color:var(--teal);border:0.5px solid rgba(28,154,138,0.2)}
+.ct-warn{background:rgba(200,136,26,0.08);color:var(--amber);border:0.5px solid rgba(200,136,26,0.2)}
+.ct-req{background:rgba(192,72,72,0.08);color:var(--rose);border:0.5px solid rgba(192,72,72,0.2)}
+
+/* Chat */
+.chat-panel{background:var(--card);border:0.5px solid var(--wire)}
+.chat-header{padding:14px 20px;border-bottom:0.5px solid var(--wire);display:flex;justify-content:space-between;align-items:center}
+.chat-head-txt{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.chat-quick-row{padding:12px 20px;border-bottom:0.5px solid var(--frost);display:flex;gap:6px;flex-wrap:wrap}
+.cq-pill{font-size:10px;letter-spacing:0.5px;padding:5px 12px;border:0.5px solid var(--mist);border-radius:2px;cursor:pointer;color:var(--fog);transition:all .2s;background:transparent}
+.cq-pill:hover{border-color:var(--wire);color:var(--ivory)}
+.chat-msgs{min-height:120px;max-height:280px;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.cm{padding:10px 14px;font-size:13px;line-height:1.7;font-weight:300;max-width:86%}
+.cm.user{background:var(--gilded);border:0.5px solid var(--wire);align-self:flex-end;color:var(--ivory)}
+.cm.ai{background:var(--surface);color:var(--fog);align-self:flex-start}
+.cm.thinking{background:var(--surface);color:var(--mist);font-style:italic;font-size:11px;align-self:flex-start}
+.chat-input-row{padding:12px 16px;border-top:0.5px solid var(--wire);display:flex;gap:8px}
+.chat-field{flex:1;background:transparent;border:0.5px solid var(--mist);padding:9px 14px;color:var(--ivory);font-size:12px;font-family:var(--sans);outline:none;border-radius:1px;transition:border-color .2s}
+.chat-field:focus{border-color:var(--wire)}
+.chat-send{padding:9px 20px;background:transparent;border:0.5px solid var(--wire);color:var(--gold);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--sans);cursor:pointer;transition:all .2s}
+.chat-send:hover{background:var(--gold);color:#000;border-color:var(--gold)}
+
+/* === ADVISOR === */
+.adv-outer{max-width:960px;margin:0 auto;padding:48px 28px}
+.adv-doc{background:var(--card);border:0.5px solid var(--wire);margin-bottom:16px}
+.adv-doc-head{padding:20px 24px;border-bottom:0.5px solid var(--wire);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.adv-doc-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.adv-doc-body{padding:20px 24px}
+.brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:20px}
+.brow{display:flex;gap:8px}
+.bk{font-size:11px;color:var(--fog);min-width:120px;flex-shrink:0;font-weight:300}
+.bv{font-size:11px;color:var(--ivory);font-weight:400}
+.readiness-section{background:var(--surface);padding:16px;margin-bottom:20px}
+.rs-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+.rs-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog)}
+.rs-score{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--gold)}
+.rs-bar{height:1px;background:var(--mist);margin-bottom:8px}
+.rs-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.rs-note{font-size:10px;color:var(--mist);font-weight:300}
+.obj-eye{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:8px}
+.obj-item{padding:10px 14px;border-left:1.5px solid var(--amber);background:rgba(200,136,26,0.04);margin-bottom:6px;font-size:12px;color:var(--fog);font-weight:300}
+.na-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--frost)}
+.na-num{font-family:var(--serif);font-size:16px;font-weight:300;color:var(--gold);width:20px;flex-shrink:0;line-height:1.4}
+.na-text{font-size:12px;color:var(--fog);font-weight:300;line-height:1.6}
+.spec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--mist)}
+.spec-cell{background:var(--card);padding:14px;text-align:center}
+.spec-ic{font-size:20px;margin-bottom:6px}
+.spec-nm{font-size:11px;font-weight:500;color:var(--ivory);margin-bottom:2px}
+.spec-ds{font-size:10px;color:var(--fog);font-weight:300}
+.conv-body{font-size:12px;color:var(--fog);font-weight:300;line-height:1.9}
+
+/* === PORTFOLIO === */
+.port-outer{max-width:960px;margin:0 auto;padding:48px 28px}
+.port-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--wire);border:0.5px solid var(--wire);margin-bottom:24px}
+.kpi{background:var(--card);padding:20px}
+.kpi-val{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--gold);margin-bottom:4px}
+.kpi-chg{font-size:10px;letter-spacing:0.5px;margin-bottom:6px}
+.kpi-up{color:var(--teal)}.kpi-dn{color:var(--rose)}
+.kpi-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist)}
+.alert-feed{display:flex;flex-direction:column;gap:1px;background:var(--wire);border:0.5px solid var(--wire);margin-bottom:24px}
+.al-item{background:var(--card);padding:14px 20px;display:flex;gap:14px}
+.al-accent{width:2px;border-radius:1px;flex-shrink:0;align-self:stretch}
+.al-info .al-accent{background:var(--cobalt)}.al-warn .al-accent{background:var(--amber)}.al-grn .al-accent{background:var(--teal)}.al-act .al-accent{background:var(--gold)}
+.al-body{flex:1}
+.al-title{font-size:12px;font-weight:500;color:var(--ivory);margin-bottom:3px}
+.al-desc{font-size:11px;color:var(--fog);font-weight:300;line-height:1.6}
+.hs-list{display:flex;flex-direction:column;gap:1px;background:var(--wire);border:0.5px solid var(--wire);margin-bottom:20px}
+.hsc{background:var(--card);padding:20px 24px}
+.hsc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.hsc-prop{font-family:var(--serif);font-size:16px;font-weight:400;color:var(--ivory)}
+.hsc-rec{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:1px;font-weight:500}
+.rec-hold{background:rgba(46,114,184,0.1);color:var(--cobalt);border:0.5px solid rgba(46,114,184,0.2)}
+.rec-sell{background:rgba(200,136,26,0.1);color:var(--amber);border:0.5px solid rgba(200,136,26,0.2)}
+.rec-refin{background:rgba(122,98,216,0.1);color:var(--pur);border:0.5px solid rgba(122,98,216,0.2)}
+.hsc-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--mist);margin-bottom:14px}
+.hm{background:var(--surface);padding:10px;text-align:center}
+.hm-v{font-family:var(--serif);font-size:15px;font-weight:400;color:var(--ivory)}
+.hm-l{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mist);margin-top:3px}
+.hsc-rationale{font-size:12px;color:var(--fog);font-weight:300;line-height:1.75;border-top:0.5px solid var(--frost);padding-top:14px}
+.opps-panel{background:var(--card);border:0.5px solid var(--wire);padding:20px 24px}
+.opps-eye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.opp-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:0.5px solid var(--frost);gap:12px;flex-wrap:wrap}
+.opp-row:last-child{border-bottom:none}
+.opp-name{font-size:13px;font-weight:400;color:var(--ivory);margin-bottom:3px}
+.opp-desc{font-size:11px;color:var(--fog);font-weight:300}
+.opp-yield{font-family:var(--serif);font-size:20px;font-weight:300;color:var(--gold)}
+.opp-type{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist);margin-top:2px;text-align:right}
+
+/* === MODAL === */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal.open{display:flex}
+.mbox{background:var(--card);border:0.5px solid var(--wire);padding:32px;width:100%;max-width:460px;animation:slideUp .3s cubic-bezier(0.16,1,0.3,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.mbox-eye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.mbox-title{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--ivory);margin-bottom:6px}
+.mbox-sub{font-size:12px;color:var(--fog);margin-bottom:24px;line-height:1.7;font-weight:300}
+.field-lbl{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:8px}
+.field-wrap{margin-bottom:16px}
+.field{width:100%;background:var(--surface);border:0.5px solid var(--mist);padding:10px 14px;color:var(--ivory);font-size:13px;font-family:var(--sans);outline:none;border-radius:1px;transition:border-color .2s}
+.field:focus{border-color:var(--wire)}
+.field-note{font-size:10px;color:var(--mist);margin-top:5px;font-weight:300;line-height:1.5}
+.mbox-actions{display:flex;gap:8px;margin-top:20px}
+.mbox-status{font-size:11px;color:var(--fog);margin-top:10px;line-height:1.6;font-weight:300}
+
+/* === TOAST === */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--card);border:0.5px solid var(--wire);padding:12px 24px;font-size:11px;letter-spacing:0.5px;color:var(--ivory);z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* === UTILITY === */
+.section-eye{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.section-eye::before{content:"";display:inline-block;width:16px;height:0.5px;background:var(--gold)}
+.section-h{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--ivory);margin-bottom:4px}
+.section-sub{font-size:12px;color:var(--fog);margin-bottom:20px;font-weight:300}
+.divider{height:0.5px;background:var(--wire);margin:28px 0}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}.mt24{margin-top:24px}.mt32{margin-top:32px}
+.serif-num{font-family:var(--serif)}
+
+@media(max-width:700px){
+  .hero{padding:40px 6%}.hero-h1,.hero-h2{font-size:32px}
+  .country-scroll{overflow-x:auto}.ctr-card{width:120px}
+  .alloc-emirates{grid-template-columns:1fr}
+  .fin-scenarios{grid-template-columns:1fr}
+  .ls-grid{grid-template-columns:1fr}
+  .spec-grid{grid-template-columns:1fr 1fr}
+  .port-kpis{grid-template-columns:repeat(2,1fr)}
+  .prop-metrics-row{grid-template-columns:repeat(2,1fr)}
+  .hsc-metrics{grid-template-columns:repeat(2,1fr)}
+  .brief-grid{grid-template-columns:1fr}
+  .hero-right{display:none}
+}
+
+/* ═══════════════════════════════════════════════
+   LUXURY UPGRADE CSS
+═══════════════════════════════════════════════ */
+
+/* SVG noise grain texture */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:200px 200px;
+}
+.scr,.tb,.site-footer{position:relative;z-index:1}
+
+/* ── SCROLL REVEAL ── */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(0.16,1,0.3,1),transform .7s cubic-bezier(0.16,1,0.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── SHIMMER BUTTON ── */
+.shimmer-btn{position:relative;overflow:hidden}
+.shimmer-btn::after{
+  content:"";position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+  transform:skewX(-20deg);
+  animation:shimmer 3.5s ease-in-out infinite;
+}
+@keyframes shimmer{0%,70%{left:-100%}85%,100%{left:160%}}
+
+/* ── COUNTER ANIMATION ── */
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.counter{display:inline-block;animation:countUp .6s ease both}
+
+/* ── COUNTRY CARD HOVER LIFT ── */
+.ctr-card{transition:all .3s cubic-bezier(0.16,1,0.3,1) !important}
+.ctr-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(184,150,90,0.08) !important}
+.ctr-card.sel{transform:translateY(-2px);box-shadow:0 4px 16px rgba(184,150,90,0.12)}
+
+/* ── PROPERTY CARD HOVER ── */
+.prop-card{transition:all .3s cubic-bezier(0.16,1,0.3,1)}
+.prop-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+
+/* ── EXCLUSIVITY DOT ── */
+.excl-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin-right:7px;vertical-align:middle;animation:pulse-dot 2.5s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(184,150,90,.4)}50%{opacity:.8;box-shadow:0 0 0 5px rgba(184,150,90,0)}}
+
+/* ── TRUST STRIP ── */
+.trust-strip{margin-bottom:20px;padding:12px 0;border-top:0.5px solid var(--wire);border-bottom:0.5px solid var(--wire)}
+.trust-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mist);margin-bottom:8px}
+.trust-items{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.trust-item{font-family:var(--serif);font-size:13px;font-weight:300;color:var(--fog);font-style:italic}
+.trust-sep{color:var(--wire);font-size:11px}
+
+/* ── HERO STAT UPGRADE ── */
+.hero-stat{border-right:0.5px solid var(--wire);padding-right:32px}
+.hero-stat:last-child{border-right:none;padding-right:0}
+.hero-stat .num{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--gold);line-height:1;margin-bottom:5px}
+.hero-stat .lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mist)}
+
+/* ── FOOTER ── */
+.site-footer{
+  border-top:0.5px solid var(--wire);
+  background:var(--void);
+  padding:48px 10% 28px;
+  margin-top:60px;
+}
+.footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:40px;flex-wrap:wrap;margin-bottom:40px}
+.footer-brand{display:flex;align-items:flex-start;gap:12px;flex-shrink:0}
+.footer-gem{width:30px;height:30px;border:0.5px solid var(--wire);border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--gilded)}
+.footer-diamond{width:9px;height:9px;background:var(--gold);transform:rotate(45deg)}
+.footer-name{font-size:12px;font-weight:500;letter-spacing:2.5px;color:var(--ivory);text-transform:uppercase;margin-bottom:2px}
+.footer-tagline{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist)}
+.footer-cols{display:flex;gap:40px;flex-wrap:wrap}
+.footer-col-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.footer-link{font-size:12px;color:var(--fog);margin-bottom:8px;cursor:pointer;transition:color .2s;font-weight:300}
+.footer-link:hover{color:var(--ivory)}
+.footer-bottom{border-top:0.5px solid var(--wire);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-legal{font-size:10px;color:var(--mist);font-weight:300;line-height:1.6}
+.footer-badges{display:flex;gap:8px}
+.footer-badge{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border:0.5px solid var(--mist);border-radius:1px;color:var(--mist)}
+
+/* ── WORDING / COPY UPGRADES ── */
+.hero-h1{font-size:clamp(38px,5.5vw,68px) !important}
+.hero-h2{font-size:clamp(32px,4.5vw,56px) !important}
+
+/* ── PROCESSING SCREEN UPGRADE ── */
+.proc-outer{background:radial-gradient(ellipse 60% 60% at 50% 40%,rgba(184,150,90,0.03) 0%,transparent 70%)}
+.proc-inner{border-left:1px solid var(--wire);padding-left:28px;margin-left:8px}
+.proc-h{font-family:var(--serif);font-size:28px !important;font-weight:300 !important}
+
+/* ── REPORT MASTHEAD UPGRADE ── */
+.rpt-masthead{background:linear-gradient(180deg,rgba(184,150,90,0.03) 0%,transparent 100%);padding:28px;border-radius:2px}
+
+/* ── ASSESSMENT PROGRESS UPGRADE ── */
+.wiz-progress-bar{height:1.5px;background:rgba(255,255,255,0.04)}
+.wiz-progress-fill{background:linear-gradient(90deg,var(--gold),var(--champ))}
+
+/* ── ALLOCATION % ANIMATION ── */
+.alloc-em{transition:all .3s}
+.alloc-em:hover{background:var(--lift)}
+
+/* ── COMP ROW HOVER ── */
+.comp-row{transition:background .2s}
+.comp-row:hover{background:var(--lift)}
+
+/* ── KPI CARD HOVER ── */
+.kpi{transition:all .25s}
+.kpi:hover{background:var(--lift);transform:translateY(-1px)}
+
+/* mobile footer */
+@media(max-width:700px){
+  .footer-cols{gap:24px}
+  .hero-stat{border-right:none;padding-right:0}
+  .site-footer{padding:36px 6% 24px}
+  .trust-items{gap:4px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="logo" onclick="goScreen('landing')">
+    <div class="logo-gem"><div class="logo-diamond"></div></div>
+    <div class="logo-text">
+      <div class="logo-primary">UAE&thinsp;RE&thinsp;AI</div>
+      <div class="logo-sub">Private Intelligence</div>
+    </div>
+  </div>
+  <div class="tb-nav">
+    <span class="tb-nl" id="nl-report" onclick="goScreen('report')">Investment brief</span>
+    <span class="tb-nl" id="nl-advisor" onclick="goScreen('advisor')">Advisor console</span>
+    <span class="tb-nl" id="nl-portfolio" onclick="goScreen('portfolio')">Portfolio</span>
+  </div>
+  <div class="tb-right">
+    <div class="mode-wrap">
+      <div class="mode-opt on" id="md-demo" onclick="setMode('demo')">Demo</div>
+      <div class="mode-opt" id="md-live" onclick="setMode('live')">Live</div>
+    </div>
+    <button class="tb-btn" onclick="openModal('apiModal')">Live&nbsp;mode</button>
+  </div>
+</div>
+<div class="gold-rule" id="gold-rule"></div>
+
+<!-- ===== LANDING ===== -->
+<div id="scr-landing" class="scr on">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow reveal">
+        <div class="hero-eye-line"></div>
+        <div class="hero-eye-text">Private Client Intelligence &nbsp;&middot;&nbsp; By Application Only</div>
+      </div>
+      <div class="hero-h1 reveal" style="animation-delay:.1s">Your confidential</div>
+      <div class="hero-h1 reveal" style="animation-delay:.2s"><em>UAE property</em></div>
+      <div class="hero-h2 reveal" style="animation-delay:.3s">intelligence office.</div>
+      <div class="hero-divider reveal" style="animation-delay:.4s"></div>
+      <p class="hero-sub reveal" style="animation-delay:.5s">AI-powered allocation intelligence across Dubai, Abu Dhabi &amp; Ras Al Khaimah &mdash; structured for private wealth, family offices and investors who require verified evidence, not sales rhetoric.</p>
+      <div class="hero-stats reveal" style="animation-delay:.6s">
+        <div class="hero-stat"><div class="num counter" data-target="3" data-suffix="">3</div><div class="lbl">Emirates Covered</div></div>
+        <div class="hero-stat"><div class="num counter" data-target="12" data-suffix="">12</div><div class="lbl">AI Specialists</div></div>
+        <div class="hero-stat"><div class="num counter" data-target="320" data-suffix="+">320+</div><div class="lbl">Verified Projects</div></div>
+        <div class="hero-stat"><div class="num">AED 50B+</div><div class="lbl">Transactions Analysed</div></div>
+        <div class="hero-stat"><div class="num counter" data-target="47" data-suffix="">47</div><div class="lbl">Countries Served</div></div>
+      </div>
+      <div class="trust-strip reveal" style="animation-delay:.55s">
+        <div class="trust-label">Trusted by private clients from</div>
+        <div class="trust-items">
+          <span class="trust-item">New York</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">London</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">Dubai</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">Mumbai</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">Singapore</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">Hong Kong</span>
+          <span class="trust-sep">&middot;</span>
+          <span class="trust-item">Geneva</span>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:12px">Select your market to begin</div>
+        <div class="ctr-wrap">
+          <div class="country-scroll" id="ctr-scroll">
+            <div class="ctr-card sel" onclick="selectCountry('US/Canada',this)"><div class="ctr-code">US</div><div class="ctr-name">US &amp; Canada</div><div class="ctr-desc">Remote ownership</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('UK/Europe',this)"><div class="ctr-code">GB</div><div class="ctr-name">UK &amp; Europe</div><div class="ctr-desc">Second home &middot; Rental</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('UAE/GCC',this)"><div class="ctr-code">AE</div><div class="ctr-name">UAE &amp; GCC</div><div class="ctr-desc">Trophy &middot; Lifestyle</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('India/NRI',this)"><div class="ctr-code">IN</div><div class="ctr-name">India &amp; NRIs</div><div class="ctr-desc">Wealth &middot; Golden Visa</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('China/HK',this)"><div class="ctr-code">CN</div><div class="ctr-name">China &amp; HK</div><div class="ctr-desc">Family office</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('Singapore',this)"><div class="ctr-code">SG</div><div class="ctr-name">Singapore</div><div class="ctr-desc">Portfolio &middot; Governance</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('Japan',this)"><div class="ctr-code">JP</div><div class="ctr-name">Japan</div><div class="ctr-desc">Completed assets</div><div class="ctr-sel-mark"></div></div>
+            <div class="ctr-card" onclick="selectCountry('Global HNI',this)"><div class="ctr-code">GL</div><div class="ctr-name">Global HNI</div><div class="ctr-desc">Multi-market</div><div class="ctr-sel-mark"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-cta-row reveal" style="animation-delay:.7s">
+        <button class="btn-primary shimmer-btn" onclick="startAssessment()">Request private assessment</button>
+        <button class="btn-outline" onclick="setMode('demo');startAssessment()">Explore demo &nbsp;&rarr;</button>
+      </div>
+      <div class="hero-disclaimer reveal" style="animation-delay:.8s">
+        <span class="excl-dot"></span> No passport or bank documents at this stage &nbsp;&middot;&nbsp; 5 minutes &nbsp;&middot;&nbsp; Evidence-backed &nbsp;&middot;&nbsp; Strictly confidential
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ASSESSMENT ===== -->
+<div id="scr-assessment" class="scr">
+  <div class="wiz-progress-bar"><div class="wiz-progress-fill" id="wiz-prog-fill" style="width:0%"></div></div>
+  <div class="wiz-body">
+    <div class="wiz-step-eye" id="wiz-eye">Step 1 &mdash; Objective</div>
+    <div class="wiz-q" id="wiz-q">Loading...</div>
+    <div class="wiz-hint" id="wiz-hint"></div>
+    <div id="wiz-opts"></div>
+  </div>
+  <div class="wiz-nav-bar">
+    <button class="wiz-back-btn" id="wiz-back" onclick="wizNav(-1)">&larr; &nbsp; Back</button>
+    <div class="wiz-fwd-row">
+      <span class="wiz-skip-lnk" onclick="wizSkip()">Skip</span>
+      <button class="btn-primary" id="wiz-next" onclick="wizNav(1)" style="padding:11px 28px;font-size:10px;letter-spacing:2px">Continue &nbsp;&rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROCESSING ===== -->
+<div id="scr-processing" class="scr">
+  <div class="proc-outer">
+    <div class="proc-inner">
+      <div class="proc-eye">Assembling your brief</div>
+      <div class="proc-h">Twelve specialists are reviewing your profile</div>
+      <div class="proc-sub">Each agent independently analyses your requirements, verifies evidence and contributes to your private investment brief.</div>
+      <div class="ag-track" id="ag-track"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REPORT ===== -->
+<div id="scr-report" class="scr">
+  <div class="rpt-outer">
+    <div class="rpt-masthead">
+      <div class="rpt-stamp">
+        <div class="rpt-stamp-text">Private investment brief</div>
+        <div class="rpt-stamp-line"></div>
+        <div class="rpt-stamp-conf">Strictly confidential</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+        <div>
+          <div class="rpt-main-title" id="rpt-title">UAE Property Intelligence Report</div>
+          <div class="rpt-meta">
+            <span class="rpt-badge rb-A">Evidence Grade A &mdash; Verified</span>
+            <span class="rpt-badge rb-country" id="rpt-ctag"></span>
+            <span class="rpt-badge rb-gv" id="rpt-gv">&check; Golden Visa Eligible</span>
+          </div>
+        </div>
+        <div class="rpt-actions">
+          <button class="btn-sm-outline" onclick="goScreen('advisor')">Advisor console &rarr;</button>
+          <button class="btn-sm-gold" onclick="downloadMemo()">Download memo</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--fog);margin-top:10px;font-weight:300" id="rpt-inv-line">Loading investor profile...</div>
+    </div>
+
+    <div class="rtab-nav">
+      <button class="rtab-btn on" onclick="showRTab('alloc',this)">Emirate Allocation</button>
+      <button class="rtab-btn" onclick="showRTab('props',this)">Property Shortlist</button>
+      <button class="rtab-btn" onclick="showRTab('fin',this)">Financial Scenarios</button>
+      <button class="rtab-btn" onclick="showRTab('life',this)">Lifestyle Match</button>
+      <button class="rtab-btn" onclick="showRTab('comp',this)">Compliance</button>
+      <button class="rtab-btn" onclick="showRTab('qa',this)">Ask the AI</button>
+    </div>
+
+    <div id="rp-alloc" class="rtab-panel on">
+      <div class="alloc-emirates" id="alloc-emirates"></div>
+      <div class="alloc-rationale-box" id="alloc-rationale"></div>
+      <div id="alloc-detail" class="mt20"></div>
+    </div>
+    <div id="rp-props" class="rtab-panel">
+      <div class="section-eye">Curated shortlist &mdash; three properties maximum</div>
+      <div class="section-sub">Every property not on this list has been reviewed and documented below.</div>
+      <div class="prop-list" id="prop-list"></div>
+      <div class="prop-rejects-box mt20" id="global-rejects">
+        <div class="prj-eye">Properties reviewed and not recommended</div>
+        <div id="reject-list"></div>
+      </div>
+    </div>
+    <div id="rp-fin" class="rtab-panel">
+      <div class="section-eye">Five-year financial model &mdash; <span id="fin-prop-name"></span></div>
+      <div class="section-sub">Deterministic outputs from verified inputs. The AI explains &mdash; it does not calculate.</div>
+      <div class="fin-acq-wrap" id="fin-acq"></div>
+      <div class="slider-panel">
+        <div class="sl-row"><span class="sl-key">Annual rental yield</span><span class="sl-val" id="yield-val">6.8%</span></div>
+        <input type="range" min="3" max="12" step="0.1" value="6.8" oninput="updateYield(this.value)">
+      </div>
+      <div class="slider-panel">
+        <div class="sl-row"><span class="sl-key">Annual capital appreciation</span><span class="sl-val" id="cap-val">5.0%</span></div>
+        <input type="range" min="-2" max="15" step="0.5" value="5.0" oninput="updateCap(this.value)">
+      </div>
+      <div class="fin-scenarios" id="fin-grid"></div>
+      <div class="fin-note mt12">Forecasts are illustrative only. Not investment advice. Consult a licensed financial adviser before making investment decisions.</div>
+    </div>
+    <div id="rp-life" class="rtab-panel">
+      <div class="section-eye">Lifestyle &amp; relocation match</div>
+      <div class="section-sub">For investors with personal use above 30%, lifestyle weighting equals rental yield in our scoring model.</div>
+      <div class="ls-grid" id="ls-grid"></div>
+    </div>
+    <div id="rp-comp" class="rtab-panel">
+      <div class="section-eye">Jurisdiction &amp; regulatory checklist</div>
+      <div class="section-sub">A professional review checklist &mdash; not legal or tax advice. Refer flagged items to a qualified specialist.</div>
+      <div class="comp-list" id="comp-list"></div>
+    </div>
+    <div id="rp-qa" class="rtab-panel">
+      <div class="section-eye">Ask the evidence agent</div>
+      <div class="section-sub">Questions are answered from your report only. The agent will not speculate beyond verified data.</div>
+      <div class="chat-panel">
+        <div class="chat-header"><span class="chat-head-txt">Investment Q&amp;A &mdash; Evidence-backed answers</span></div>
+        <div class="chat-quick-row">
+          <span class="cq-pill" onclick="sendQ('Why Dubai over Abu Dhabi for my profile?')">Why Dubai over Abu Dhabi?</span>
+          <span class="cq-pill" onclick="sendQ('What if rent drops 15%?')">If rent drops 15%</span>
+          <span class="cq-pill" onclick="sendQ('What is my Golden Visa eligibility?')">Golden Visa</span>
+          <span class="cq-pill" onclick="sendQ('What is my exit strategy after 5 years?')">Exit after 5 years</span>
+          <span class="cq-pill" onclick="sendQ('Which option is best for family use?')">Best for family use</span>
+          <span class="cq-pill" onclick="sendQ('What data is independently verified?')">What is verified?</span>
+        </div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="cm ai">Welcome. I have reviewed your complete investment brief. Ask me anything about your allocation, properties, financial scenarios or jurisdiction checklist &mdash; I will only answer from verified evidence in your report.</div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-field" id="chat-in" placeholder="Ask about your report&hellip;" onkeydown="if(event.key==='Enter')sendChatMsg()">
+          <button class="chat-send" onclick="sendChatMsg()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADVISOR ===== -->
+<div id="scr-advisor" class="scr">
+  <div class="adv-outer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="section-eye">Advisor console</div>
+        <div class="section-h">Consultation brief</div>
+        <div class="section-sub">Auto-generated &middot; for advisor use only &middot; not for client distribution</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm-outline" onclick="goScreen('report')">&larr; Report</button>
+        <button class="btn-sm-gold" onclick="window.print()">Print brief</button>
+      </div>
+    </div>
+    <div class="adv-doc">
+      <div class="adv-doc-head"><span class="adv-doc-title">Investor profile summary</span><span style="font-size:11px;color:var(--mist)" id="adv-priority"></span></div>
+      <div class="adv-doc-body">
+        <div class="brief-grid" id="brief-grid"></div>
+        <div class="readiness-section">
+          <div class="rs-top"><span class="rs-lbl">Investment readiness</span><span class="rs-score" id="rs-score">84</span></div>
+          <div class="rs-bar"><div class="rs-fill" id="rs-fill" style="width:84%"></div></div>
+          <div class="rs-note" style="margin-top:6px">Based on declared intent &amp; engagement depth &mdash; not nationality or wealth assumptions</div>
+        </div>
+        <div class="obj-eye">Anticipated objections</div>
+        <div id="obj-list"></div>
+        <div style="margin-top:20px">
+          <div class="obj-eye" style="color:var(--gold)">Recommended next actions</div>
+          <div id="na-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="adv-doc mt16">
+      <div class="adv-doc-head"><span class="adv-doc-title">Required specialists</span></div>
+      <div class="spec-grid" id="spec-grid"></div>
+    </div>
+    <div class="adv-doc mt16">
+      <div class="adv-doc-head"><span class="adv-doc-title">Suggested consultation structure</span></div>
+      <div class="adv-doc-body"><div class="conv-body" id="conv-body"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PORTFOLIO ===== -->
+<div id="scr-portfolio" class="scr">
+  <div class="port-outer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="section-eye">Portfolio dashboard</div>
+        <div class="section-h">Live monitoring &amp; recommendations</div>
+        <div class="section-sub">Construction alerts &middot; hold / sell / refinance &middot; cross-emirate opportunities</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm-outline" onclick="goScreen('report')">&larr; Report</button>
+        <button class="btn-sm-gold" onclick="loadPortfolio()">Refresh &nbsp;&#8635;</button>
+      </div>
+    </div>
+    <div class="port-kpis" id="port-kpis"></div>
+    <div class="section-eye mt24">Active alerts</div>
+    <div class="alert-feed mt8" id="port-alerts"></div>
+    <div class="section-eye mt24">Hold &middot; sell &middot; refinance</div>
+    <div class="hs-list mt8" id="hs-list"></div>
+    <div class="opps-panel mt20">
+      <div class="opps-eye">Cross-emirate opportunities</div>
+      <div id="opp-rows"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== API MODAL ===== -->
+<div class="modal" id="apiModal">
+  <div class="mbox">
+    <div class="mbox-eye">Configuration</div>
+    <div class="mbox-title">Activate live mode</div>
+    <div class="mbox-sub">Live mode runs a personalised AI assessment. Enter your name to personalise the report.</div>
+    <div class="field-wrap">
+      <label class="field-lbl">Your name (personalises the report)</label>
+      <input class="field" type="text" id="nameInput" placeholder="e.g. Vikram Mehta">
+    </div>
+    <div class="mbox-actions">
+      <button class="btn-primary" style="flex:1;font-size:10px;letter-spacing:2px;padding:12px" onclick="saveApiKey()">Activate live mode</button>
+      <button class="btn-outline" style="padding:12px 20px" onclick="closeModal('apiModal')">Cancel</button>
+    </div>
+    <div class="mbox-status" id="api-key-status"></div>
+  </div>
+</div>
+
+<div class="toast" id="app-toast"></div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-gem"><div class="footer-diamond"></div></div>
+      <div>
+        <div class="footer-name">UAE&thinsp;RE&thinsp;AI</div>
+        <div class="footer-tagline">Private Property Intelligence</div>
+      </div>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <div class="footer-col-title">Platform</div>
+        <div class="footer-link" onclick="startAssessment()">Private Assessment</div>
+        <div class="footer-link" onclick="goScreen('report')">Investment Brief</div>
+        <div class="footer-link" onclick="goScreen('advisor')">Advisor Console</div>
+        <div class="footer-link" onclick="goScreen('portfolio')">Portfolio Dashboard</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Markets</div>
+        <div class="footer-link">US &amp; Canada</div>
+        <div class="footer-link">UK &amp; Europe</div>
+        <div class="footer-link">UAE &amp; GCC</div>
+        <div class="footer-link">India &amp; NRIs</div>
+        <div class="footer-link">Asia Pacific</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Emirates</div>
+        <div class="footer-link">Dubai</div>
+        <div class="footer-link">Abu Dhabi</div>
+        <div class="footer-link">Ras Al Khaimah</div>
+        <div class="footer-link">Golden Visa</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Private Office</div>
+        <div class="footer-link" onclick="openModal('apiModal')">Advisor Login</div>
+        <div class="footer-link">By Invitation Only</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-legal">
+      &copy; 2025 UAE_RE_AI &nbsp;&middot;&nbsp; Powered by Angshuman AI Corp &nbsp;&middot;&nbsp; 
+      This platform provides information only. Not financial, legal or tax advice.
+      Property transactions are subject to UAE regulatory requirements.
+    </div>
+    <div class="footer-badges">
+      <span class="footer-badge">Evidence-backed</span>
+      <span class="footer-badge">PDPL Compliant</span>
+      <span class="footer-badge">AML Aware</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const S={mode:'demo',apiKey:'',webhookUrl:'',userName:'Valued Investor',country:'India/NRI',answers:{},wizStep:0,reportData:null,_bPrice:3850000,_bTotal:4249000,currency:'INR',fxRate:23.5};
+
+// Currency config — symbol, code, AED rate, locale, compact suffix threshold
+const CURRENCIES={
+  'India/NRI':   {sym:'₹',  code:'INR', rate:23.5,  locale:'en-IN', cr:1e7,   cs:'Cr',  cl:1e5, cll:'L'},
+  'UAE/GCC':     {sym:'AED ',code:'AED', rate:1,     locale:'en-AE', cr:1e6,   cs:'M',   cl:1e3, cll:'K'},
+  'UK/Europe':   {sym:'£',  code:'GBP', rate:0.215, locale:'en-GB', cr:1e6,   cs:'M',   cl:1e3, cll:'K'},
+  'US/Canada':   {sym:'$',  code:'USD', rate:0.272, locale:'en-US', cr:1e6,   cs:'M',   cl:1e3, cll:'K'},
+  'China/HK':    {sym:'¥',  code:'CNY', rate:1.98,  locale:'zh-CN', cr:1e8,   cs:'亿',  cl:1e4, cll:'万'},
+  'Singapore':   {sym:'S$', code:'SGD', rate:0.37,  locale:'en-SG', cr:1e6,   cs:'M',   cl:1e3, cll:'K'},
+  'Japan':       {sym:'¥',  code:'JPY', rate:40.5,  locale:'ja-JP', cr:1e8,   cs:'億',  cl:1e4, cll:'万'},
+  'Global HNI':  {sym:'$',  code:'USD', rate:0.272, locale:'en-US', cr:1e6,   cs:'M',   cl:1e3, cll:'K'}
+};
+
+function getCurrency(){return CURRENCIES[S.country]||CURRENCIES['UAE/GCC'];}
+
+// Convert AED amount to local currency, return compact string e.g. ₹90.5Cr / $1.05M
+function toLocal(aed,compact=true){
+  const c=getCurrency();
+  if(c.code==='AED')return null; // no need to show dual when investor is already AED
+  const val=aed*c.rate;
+  if(!compact)return c.sym+Math.round(val).toLocaleString(c.locale);
+  if(val>=c.cr)return c.sym+(val/c.cr).toFixed(2).replace(/\.?0+$/,'')+c.cs;
+  if(val>=c.cl)return c.sym+(val/c.cl).toFixed(1).replace(/\.?0+$/,'')+c.cll;
+  return c.sym+Math.round(val).toLocaleString(c.locale);
+}
+
+// Dual display: "AED 3,850,000  ·  ₹90.5Cr"
+function dualPrice(aed){
+  const loc=toLocal(aed);
+  const aedStr='AED '+aed.toLocaleString();
+  return loc?aedStr+'<span style="color:var(--fog);font-size:0.7em;margin-left:8px">\u00b7 '+loc+'</span>':aedStr;
+}
+
+// Budget option local hint e.g. "₹23.5Cr – ₹58.75Cr"
+function budgetHint(label){
+  const c=getCurrency();
+  if(c.code==='AED')return '';
+  const map={
+    'AED 1M \u2013 2.5M':[1e6,2.5e6],'AED 2.5M \u2013 5M':[2.5e6,5e6],
+    'AED 5M \u2013 10M':[5e6,10e6],'AED 10M \u2013 25M':[10e6,25e6],'AED 25M+':[25e6,null]
+  };
+  const range=map[label];if(!range)return '';
+  const lo=toLocal(range[0]);const hi=range[1]?toLocal(range[1]):'';
+  return ' \u00b7 '+lo+(hi?' \u2013 '+hi:'+')+' '+c.code;
+}
+
+const WIZ=[
+  {q:'What is your primary investment objective?',hint:'This determines how we weight financial returns versus lifestyle versus capital preservation across your brief.',key:'objective',opts:[{ic:'&#128200;',lbl:'Capital appreciation',ds:'Maximise long-term value growth'},{ic:'&#128176;',lbl:'Rental income',ds:'Stable yield from day one'},{ic:'&#127963;',lbl:'Capital preservation',ds:'Safety-first, low-risk profile'},{ic:'&#127968;',lbl:'Personal use + income',ds:'Holiday home with rental upside'},{ic:'&#127775;',lbl:'Golden Visa + residency',ds:'UAE residency pathway'},{ic:'&#128188;',lbl:'Family office allocation',ds:'Portfolio diversification'}]},
+  {q:'What is your total investment budget?',hint:'Include acquisition costs \u2014 approximately 7% above the purchase price for transfer fees, legal and agent costs.',key:'budget',opts:[{ic:'&#127968;',lbl:'AED 1M \u2013 2.5M',ds:'Studio \u00b7 1BR apartment'},{ic:'&#127962;',lbl:'AED 2.5M \u2013 5M',ds:'2\u20133BR \u00b7 Townhouse'},{ic:'&#127961;',lbl:'AED 5M \u2013 10M',ds:'Villa \u00b7 Penthouse'},{ic:'&#127958;',lbl:'AED 10M \u2013 25M',ds:'Luxury villa \u00b7 Ultra-prime'},{ic:'&#128142;',lbl:'AED 25M+',ds:'Trophy asset \u00b7 Multi-property'}]},
+  {q:'What is your intended holding period?',hint:'Off-plan investments typically require a minimum three-year view to account for construction risk and market liquidity.',key:'holding',opts:[{ic:'&#9889;',lbl:'1\u20133 years',ds:'Short-term \u00b7 Flip strategy'},{ic:'&#128197;',lbl:'3\u20135 years',ds:'Medium-term \u00b7 Balanced'},{ic:'&#127807;',lbl:'5\u201310 years',ds:'Long-term \u00b7 Wealth building'},{ic:'&#9854;',lbl:'10+ years \u00b7 Generational',ds:'Estate planning \u00b7 Wealth transfer'}]},
+  {q:'How much will be for personal use?',hint:'Personal use above 30% shifts our lifestyle weighting to equal rental yield in the property scoring model.',key:'personalUse',opts:[{ic:'&#128188;',lbl:'Pure investment (0%)',ds:'100% rental income focus'},{ic:'&#127796;',lbl:'Occasional use (under 20%)',ds:'Rental-first with flexibility'},{ic:'&#127942;',lbl:'Seasonal use (20\u201350%)',ds:'6\u20138 weeks per year'},{ic:'&#127968;',lbl:'Primary or secondary home',ds:'Family or frequent use'}]},
+  {q:'What is your risk tolerance?',hint:'This affects whether we prioritise completed ready stock or off-plan growth potential in your shortlist.',key:'risk',opts:[{ic:'&#128737;',lbl:'Conservative',ds:'Completed assets only \u00b7 Verified income'},{ic:'&#9878;',lbl:'Medium-low',ds:'Mostly ready \u00b7 Some off-plan'},{ic:'&#128202;',lbl:'Medium',ds:'Balanced mix of both'},{ic:'&#128640;',lbl:'Medium-high',ds:'Off-plan growth \u00b7 Emerging areas'}]},
+  {q:'Do you prefer ready property or off-plan?',hint:'Off-plan typically offers lower entry prices and structured payment plans. Ready property gives immediate rental income.',key:'preference',opts:[{ic:'&#127959;',lbl:'Off-plan only',ds:'Lower price \u00b7 Payment plan \u00b7 Growth'},{ic:'&#127962;',lbl:'Mostly off-plan',ds:'60%+ off-plan allocation'},{ic:'&#9878;',lbl:'A mix of both',ds:'Balanced portfolio approach'},{ic:'&#127968;',lbl:'Ready property only',ds:'Immediate handover \u00b7 No construction risk'}]},
+  {q:'Are you interested in the UAE Golden Visa?',hint:'The UAE Golden Visa requires a minimum property value of AED 2M and grants 10-year UAE residency.',key:'residency',opts:[{ic:'&#9989;',lbl:'Yes \u2014 primary goal',ds:'Visa pathway drives the decision'},{ic:'&#10004;',lbl:'Yes \u2014 alongside investment',ds:'Visa is a welcome benefit'},{ic:'&#8987;',lbl:'Considering it',ds:'Would like more information'},{ic:'&#10060;',lbl:'Not a priority',ds:'Investment returns focus only'}]},
+  {q:'Do you need to finance part of the purchase?',hint:'UAE banks typically offer 50\u201375% LTV for non-residents. Some off-plan projects offer developer payment plans.',key:'financing',opts:[{ic:'&#128181;',lbl:'Cash purchase',ds:'Full payment \u00b7 No leverage'},{ic:'&#127982;',lbl:'UAE mortgage (up to 75%)',ds:'Local bank financing'},{ic:'&#128203;',lbl:'Developer payment plan',ds:'Staggered during construction'},{ic:'&#128260;',lbl:'Mixed or evaluating',ds:'Options under review'}]},
+  {q:'When would you like to speak with a specialist?',hint:'Your private consultation brief will be prepared using all insights gathered from this assessment.',key:'timing',opts:[{ic:'&#9889;',lbl:'This week',ds:'Highly motivated \u00b7 Ready to act'},{ic:'&#128197;',lbl:'Within a month',ds:'Active search phase'},{ic:'&#128467;',lbl:'Next 1\u20133 months',ds:'Research and evaluation'},{ic:'&#128269;',lbl:'Just exploring',ds:'No firm timeline yet'}]}
+];
+
+const AGENTS=[
+  {nm:'Investor Profiling &amp; Suitability',tk:'Extracting investor profile and risk capacity...'},
+  {nm:'Jurisdiction &amp; Funding',tk:'Identifying ownership routes and funding compliance...'},
+  {nm:'Emirate Allocation',tk:'Calculating Dubai \u00b7 Abu Dhabi \u00b7 RAK allocation...'},
+  {nm:'Property Matching',tk:'Scanning 320+ verified projects for eligible matches...'},
+  {nm:'Due Diligence',tk:'Reviewing developer records, escrow and permits...'},
+  {nm:'Financial Scenario Modelling',tk:'Running deterministic acquisition and return models...'},
+  {nm:'Lifestyle &amp; Relocation',tk:'Scoring schools, beaches, commute and family fit...'},
+  {nm:'Regulatory &amp; Evidence',tk:'Validating every material fact before publication...'},
+  {nm:'HNI Concierge',tk:'Preparing specialist referrals and booking options...'},
+  {nm:'Lead &amp; CRM',tk:'Generating readiness score and advisor brief...'},
+  {nm:'Portfolio Monitoring Setup',tk:'Setting up post-purchase monitoring triggers...'},
+  {nm:'Final Evidence Gate',tk:'Final compliance check and confidence grading...'}
+];
+
+const DEMO={
+  investor:{name:'Vikram Mehta',country:'India/NRI',objective:'Capital preservation + rental income + Golden Visa',budget:'AED 5M \u2013 10M',holding:'7\u201310 years',personalUse:'Seasonal (approx 20%)',risk:'Medium',preference:'Mix of ready and off-plan',residency:'Yes \u2014 Golden Visa alongside investment',financing:'Cash purchase',timing:'Within a month',jurisdiction:'Resident Indian \u2014 NRI tax status pending confirmation',fundingSource:'Business proceeds + savings \u2014 FEMA compliance required'},
+  allocation:{
+    dubai:{pct:55,cls:'pct-dubai',name:'Dubai',tag:'Primary allocation',desc:'Highest secondary-market liquidity, international buyer depth, and rental income certainty. Emaar Beachfront independently qualifies for the Golden Visa at AED 3.85M. Exit optionality within the holding period is strongest here.'},
+    ad:{pct:30,cls:'pct-ad',name:'Abu Dhabi',tag:'Secondary allocation',desc:'Planned community supply controls, Aldar-grade evidence standards, and stronger family lifestyle scores for seasonal use. Saadiyat Island carries a cultural district catalyst through 2027. Lower volatility than Dubai for the capital-preservation component.'},
+    rak:{pct:15,cls:'pct-rak',name:'Ras Al Khaimah',tag:'Growth exposure',desc:'Tourism-led capital growth anchored by the Wynn resort catalyst. Opening now confirmed 2027. Growth thesis intact \u2014 capped at 15% for a medium-risk profile to avoid over-concentration in an emerging market with limited secondary exit depth.'}
+  },
+  rationale:'A 55 \u00b7 30 \u00b7 15 split across three emirates balances a 7\u201310 year wealth-building horizon with dual objectives of rental income and capital preservation. Dubai anchors the portfolio with liquidity and rental depth. Abu Dhabi provides stability and family-use suitability. RAK is sized as a bounded growth position \u2014 meaningful enough to capture tourism-led appreciation, disciplined enough not to compromise the portfolio if the Wynn timeline shifts again.',
+  properties:[
+    {type:'best',band:'prop-top-band-best',badge:'pb-best',badgeText:'Best overall match',numeral:'I',name:'Emaar Beachfront \u2014 Marina Shores',loc:'Dubai Harbour, Dubai',dev:'Emaar Properties',price:'AED 3,850,000',priceNum:3850000,metrics:[{v:'6.8%',l:'Gross yield'},{v:'42%',l:'5yr return'},{v:'High',l:'Liquidity'},{v:'93/100',l:'Lifestyle'}],grade:'A',gradeText:'Current Emaar records, RERA registration, escrow confirmation and DLD transactional comparables.',emirate:'Dubai',dd:['&#10003; RERA registration confirmed (2024)','&#10003; Escrow: Dubai Islamic Bank','&#10003; Developer: Emaar Properties PSP Grade AAA','&#10003; Construction: 72% complete \u00b7 Q1 2026 delivery','&#10003; Delivery record: 18 of 18 Emaar projects on time','&#10003; Service charge: AED 18/sqft (DLD registered)','&#9888; Resale restriction: 12-month SPA lock post-handover'],lifestyle:{school:85,hospital:90,airport:88,beach:98,marina:96,commute:80,privacy:78}},
+    {type:'safe',band:'prop-top-band-safe',badge:'pb-safe',badgeText:'Safer alternative',numeral:'II',name:'Aldar \u2014 Saadiyat Grove',loc:'Saadiyat Island, Abu Dhabi',dev:'Aldar Properties',price:'AED 3,250,000',priceNum:3250000,metrics:[{v:'5.9%',l:'Gross yield'},{v:'35%',l:'5yr return'},{v:'Med-High',l:'Liquidity'},{v:'89/100',l:'Lifestyle'}],grade:'A',gradeText:'Aldar disclosure, TDIC masterplan, Abu Dhabi DED confirmation and independent Cluttons comparables.',emirate:'Abu Dhabi',dd:['&#10003; Abu Dhabi Urban Planning Council: Approved','&#10003; Escrow: First Abu Dhabi Bank','&#10003; Aldar delivery record: 31 of 31 projects delivered','&#10003; Status: Ready \u2014 immediate handover available','&#10003; Golden Visa eligible at AED 3.25M','&#10003; Service charge: AED 15/sqft (low for Saadiyat)','&#10003; Foreign ownership confirmed in freehold zone'],lifestyle:{school:94,hospital:88,airport:82,beach:92,marina:75,commute:72,privacy:90}},
+    {type:'grow',band:'prop-top-band-grow',badge:'pb-grow',badgeText:'Higher growth',numeral:'III',name:'RAK Properties \u2014 Mina Al Arab, The Harbour',loc:'Mina Al Arab, Ras Al Khaimah',dev:'RAK Properties PJSC',price:'AED 2,400,000',priceNum:2400000,metrics:[{v:'7.4%',l:'Gross yield'},{v:'55%',l:'5yr return*'},{v:'Medium',l:'Liquidity'},{v:'76/100',l:'Lifestyle'}],grade:'B',gradeText:'Substantially verified. Wynn resort completion projections are developer-estimated, not independently confirmed.',emirate:'Ras Al Khaimah',dd:['&#10003; RAK Properties: PJSC-listed company','&#10003; RERA RAK registration confirmed','&#10003; Escrow: RAK Bank confirmed','&#9888; Construction: 45% complete \u00b7 Q3 2026 delivery','&#9888; Wynn RAK: Opening estimate 2027 \u2014 not independently confirmed','&#10003; Service charge: AED 12/sqft','&#9888; Secondary market depth limited compared to Dubai'],lifestyle:{school:65,hospital:70,airport:72,beach:90,marina:85,commute:60,privacy:88}}
+  ],
+  rejects:['Downtown Dubai \u2014 Burj Khalifa zone: Excluded \u00b7 Service charges exceed AED 40/sqft \u00b7 Net yield below 4% after costs','Dubai Studio City off-plan tower: Excluded \u00b7 Developer delivery record shows 2 delays on prior projects \u00b7 Evidence grade C','Al Marjan Island RAK (non-Wynn plot): On Hold \u00b7 Foreign ownership status for specific unit unconfirmed pending registry check','Palm Jumeirah branded residence: Excluded \u00b7 Price AED 12M exceeds single-asset budget allocation by 40%'],
+  acquisition:{price:3850000,transfer:154000,agent:77000,legal:48000,furnishing:120000,total:4249000},
+  compliance:[
+    {st:'ok',lbl:'Foreign freehold ownership confirmed',dtl:'All three shortlisted properties are in designated freehold zones. Ownership by non-resident Indian nationals is confirmed in each case.',tag:'ct-ok',tagText:'Confirmed'},
+    {st:'ok',lbl:'Golden Visa eligibility',dtl:'Emaar Beachfront (AED 3.85M) and Saadiyat Grove (AED 3.25M) both exceed the AED 2M threshold. Off-plan properties qualify from the 50% payment stage.',tag:'ct-ok',tagText:'Eligible'},
+    {st:'warn',lbl:'Source of funds declaration (FEMA)',dtl:'As a resident Indian acquiring foreign property, the RBI/FEMA Liberalised Remittance Scheme limit of USD 250,000 per year applies. Amounts above this require RBI approval.',tag:'ct-warn',tagText:'Action required'},
+    {st:'warn',lbl:'NRI tax residency confirmation',dtl:'183+ days outside India in the relevant financial year typically establishes NRI status. Confirm days of physical presence with your CA before transacting.',tag:'ct-warn',tagText:'Verify with CA'},
+    {st:'ok',lbl:'UAE Personal Data Protection Law',dtl:'Your data is processed under PDPL consent and is purpose-limited to property advisory services. No data is shared with third parties without your separate, explicit consent.',tag:'ct-ok',tagText:'Compliant'},
+    {st:'req',lbl:'AML / KYC \u2014 source of funds documentation',dtl:'Documents required for properties above AED 2M per UAE DNFBP AML regulations: 6 months bank statements, source of funds letter, passport and Emirates ID (for UAE residents).',tag:'ct-req',tagText:'Documents required'},
+    {st:'ok',lbl:'India\u2013UAE Double Taxation Avoidance Treaty',dtl:'The India\u2013UAE DTAA is in force. The UAE levies no income tax on rental income. Rental income received by a resident Indian is taxable in India at applicable slab rates.',tag:'ct-ok',tagText:'Treaty active'},
+    {st:'warn',lbl:'Currency transfer and RBI coordination',dtl:'Transfers above USD 250K in a single financial year require RBI permission. Coordinate with your forex provider (Wise, ICICI NRI, HDFC NRI) for the optimal transfer structure.',tag:'ct-warn',tagText:'Coordinate'}
+  ],
+  advisor:{readiness:84,priority:'High priority \u2014 action within 5 days',objections:['Currency transfer complexity (FEMA / LRS limits) \u2014 may delay decision without adviser support introduced early','Uncertainty about rental management from India \u2014 needs remote management pathway clarified','Off-plan completion risk concern \u2014 Q1 2026 Emaar delivery requires reassurance via developer track record data'],nextActions:['Schedule consultation within 5 days \u2014 investor indicated a within-a-month timeline','Share Emaar delivery evidence PDF and escrow certificate before the meeting','Introduce a cross-border tax adviser (India\u2013UAE) for FEMA / LRS coordination','Prepare a remote management partner comparison \u2014 three options with fee schedules','Book a virtual site tour for Emaar Beachfront and Saadiyat Grove'],specialists:[{ic:'&#9878;',nm:'Cross-border tax adviser',ds:'India\u2013UAE DTAA \u00b7 FEMA / LRS'},{ic:'&#127982;',nm:'Forex &amp; remittance',ds:'FEMA-compliant transfer'},{ic:'&#127968;',nm:'Property manager',ds:'Remote leasing &amp; maintenance'},{ic:'&#128718;',nm:'Residency adviser',ds:'Golden Visa processing'},{ic:'&#128220;',nm:'UAE legal review',ds:'SPA review &amp; conveyancing'},{ic:'&#128269;',nm:'Snagging inspector',ds:'Pre-handover unit inspection'}],convStructure:'<b>Opening &mdash; 5 min:</b> Acknowledge the NRI investment journey and confirm the primary objective mix across income, capital and residency. Establish who the primary decision-maker is and whether a CA or wealth manager is already involved.<br><br><b>Emirate walkthrough &mdash; 10 min:</b> Walk through the 55 / 30 / 15 allocation rationale. Lead with Dubai liquidity. Frame RAK as a disciplined growth position, not speculation \u2014 this distinction matters for a medium-risk investor.<br><br><b>Property presentation &mdash; 15 min:</b> Lead with Emaar Beachfront \u2014 show the RERA evidence pack and escrow certificate. Present Saadiyat Grove as the lower-risk, ready-asset alternative. Introduce RAK briefly as the growth option. Never lead with three at once.<br><br><b>Financial walkthrough &mdash; 10 min:</b> Run the conservative yield scenario first. Show the total acquisition cost breakdown. Address the FEMA / LRS pathway directly \u2014 do not leave this unanswered or it will stall the decision.<br><br><b>Next steps &mdash; 5 min:</b> Introduce the cross-border tax adviser. Confirm virtual tour timing. Walk through the reservation-hold process and clarify this carries no purchase commitment.'},
+  portfolio:{kpis:[{v:'AED 8.1M',c:'+8.2%',l:'Portfolio current value',up:true},{v:'AED 258K',c:'+4.6%',l:'Annual rental income (projected)',up:true},{v:'6.4%',c:'-0.3%',l:'Net portfolio yield',up:false},{v:'Q1 2026',c:'On track',l:'Next handover date',up:true}],alerts:[{type:'al-grn',t:'Emaar Beachfront construction on schedule',d:'Latest progress report: 72% complete. Handover confirmed Q1 2026. No delays flagged in the RERA system.'},{type:'al-act',t:'Pre-handover snagging inspection recommended',d:'Engage an independent snagging inspector 30 days before the Q1 2026 handover. Three approved partners are available.'},{type:'al-info',t:'Saadiyat comparable sales up 7.2% year-on-year',d:'Aldar Q3 data: Saadiyat 2BR units averaging AED 3.48M. Your entry was AED 3.25M. Paper gain to date: AED 230,000.'},{type:'al-warn',t:'RAK Wynn resort opening revised to 2027',d:'Wynn Resorts confirmed Q2 2027 opening (revised from 2026). The RAK growth thesis remains intact \u2014 re-price near-term return expectations.'}],hs:[{prop:'Emaar Beachfront \u2014 Marina Shores',rec:'HOLD',cls:'rec-hold',metrics:[{v:'AED 4.1M',l:'Current value'},{v:'+6.5%',l:'Capital gain'},{v:'6.8%',l:'Projected yield'},{v:'Q1 2026',l:'Handover'}],rationale:'Strong hold. Construction on schedule. Once tenanted post-handover, this asset should deliver AED 258\u2013280K annual rental income. Dubai Harbour zone shows 30\u201360 day time-to-sale for comparable units. Do not exit before the 12-month SPA lock expires in early 2027. Review hold / sell position at the 3-year mark (2028).'},{prop:'Aldar \u2014 Saadiyat Grove',rec:'HOLD',cls:'rec-hold',metrics:[{v:'AED 3.48M',l:'Current value'},{v:'+7.1%',l:'Capital gain'},{v:'5.9%',l:'Gross yield'},{v:'Ready',l:'Status'}],rationale:'Ready asset generating rental income. Saadiyat Island has the Louvre expansion catalyst running through 2026 and planned supply controls from TDIC. Hold for the full 7-year horizon. Seasonal personal use of 4\u20136 weeks per year does not materially impair rental income if a professional manager is engaged.'},{prop:'RAK Properties \u2014 Mina Al Arab',rec:'HOLD / REVIEW 2027',cls:'rec-refin',metrics:[{v:'AED 2.52M',l:'Current value'},{v:'+5.0%',l:'Capital gain'},{v:'7.4%',l:'Proj. yield'},{v:'Q3 2026',l:'Delivery'}],rationale:'Hold through the Wynn RAK opening, now confirmed 2027. The tourism growth thesis is intact but the timeline has extended. Do not exit before the resort catalyst appears in transactional data. Review in H1 2027 \u2014 if Mina Al Arab comparable sales are not moving within 6 months of opening, consider a structured exit to recycle capital into Abu Dhabi Grade A stock.'}],opps:[{name:'Dubai Hills Estate \u2014 Sidra Villas IV',desc:'Emaar \u00b7 3BR \u00b7 AED 4.2M \u00b7 Grade A evidence',yield:'5.6%',type:'Capital growth'},{name:'Yas Island \u2014 Noya Viva, Abu Dhabi',desc:'Aldar \u00b7 4BR \u00b7 AED 3.8M \u00b7 Completed 2024 \u00b7 Golf + F1 proximity',yield:'6.1%',type:'Ready income asset'},{name:'RAK \u2014 Al Hamra Village Golf',desc:'Secondary market \u00b7 3BR villa \u00b7 AED 1.9M \u00b7 Freehold confirmed',yield:'8.2%',type:'High-yield growth'}]}
+};
+
+function goScreen(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scr-'+id).classList.add('on');
+  const showNav=!['landing','assessment','processing'].includes(id);
+  ['nl-report','nl-advisor','nl-portfolio'].forEach(n=>{document.getElementById(n).style.display=showNav?'':'none';});
+  window.scrollTo(0,0);
+  const rule=document.getElementById('gold-rule');
+  rule.classList.remove('drawn');
+  setTimeout(()=>rule.classList.add('drawn'),80);
+}
+
+function setMode(m){S.mode=m;document.getElementById('md-demo').classList.toggle('on',m==='demo');document.getElementById('md-live').classList.toggle('on',m==='live');if(m==='live'&&!S.liveReady)openModal('apiModal');}
+
+function saveApiKey(){
+  const n=document.getElementById('nameInput').value.trim();
+  if(n)S.userName=n;
+  S.liveReady=true;S.mode='live';
+  document.getElementById('md-live').classList.add('on');
+  document.getElementById('md-demo').classList.remove('on');
+  document.getElementById('api-key-status').textContent='\u2713 Live mode active.';
+  setTimeout(()=>closeModal('apiModal'),1200);
+}
+
+function selectCountry(c,el){
+  S.country=c;
+  const cur=CURRENCIES[c]||CURRENCIES['Global HNI'];
+  S.currency=cur.code;S.fxRate=cur.rate;
+  document.querySelectorAll('.ctr-card').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function startAssessment(){S.wizStep=0;S.answers={};goScreen('assessment');renderWizStep();}
+
+function renderWizStep(){
+  const step=WIZ[S.wizStep];const total=WIZ.length;
+  document.getElementById('wiz-eye').innerHTML='Step '+(S.wizStep+1)+' &mdash; '+step.q.split(' ').slice(0,2).join(' ');
+  document.getElementById('wiz-q').textContent=step.q;
+  document.getElementById('wiz-hint').textContent=step.hint;
+  document.getElementById('wiz-back').style.visibility=S.wizStep===0?'hidden':'visible';
+  document.getElementById('wiz-next').innerHTML=S.wizStep===total-1?'Get my private brief &nbsp;&rarr;':'Continue &nbsp;&rarr;';
+  document.getElementById('wiz-prog-fill').style.width=(((S.wizStep)/total)*100)+'%';
+  const saved=S.answers[step.key];
+  const isBudget=step.key==='budget';
+  let html='';
+  step.opts.forEach((o,i)=>{
+    const sel=saved===i?'sel':'';
+    const hint=isBudget?budgetHint(o.lbl):'';
+    html+='<div class="wiz-opt '+sel+'" onclick="selectOpt('+i+',this)"><div class="wiz-opt-left"><div class="wiz-opt-ic">'+o.ic+'</div><div><div class="wiz-opt-lbl">'+o.lbl+(hint?'<span style="color:var(--gold);font-size:11px;margin-left:6px">'+hint+'</span>':'')+'</div><div class="wiz-opt-ds">'+o.ds+'</div></div></div><div class="wiz-opt-arrow">&rarr;</div></div>';
+  });
+  document.getElementById('wiz-opts').innerHTML=html;
+}
+
+function selectOpt(i,el){document.querySelectorAll('.wiz-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');S.answers[WIZ[S.wizStep].key]=i;}
+
+function wizNav(dir){
+  if(dir===1){
+    if(S.answers[WIZ[S.wizStep].key]===undefined)S.answers[WIZ[S.wizStep].key]=0;
+    if(S.wizStep===WIZ.length-1){runOrchestrator();return;}
+    S.wizStep++;
+  }else{if(S.wizStep>0)S.wizStep--;}
+  renderWizStep();
+}
+
+function wizSkip(){S.answers[WIZ[S.wizStep].key]=-1;wizNav(1);}
+
+async function runOrchestrator(){
+  goScreen('processing');
+  const track=document.getElementById('ag-track');
+  track.innerHTML=AGENTS.map((a,i)=>'<div class="ag-item" id="ag-'+i+'"><div class="ag-dot"></div><div><div class="ag-label">'+a.nm+'</div><div class="ag-task" id="ag-tk-'+i+'">'+a.tk+'</div></div></div>').join('');
+  if(S.mode==='live'){await runLiveAgents();}else{await runDemoAgents();}
+}
+
+async function runDemoAgents(){
+  for(let i=0;i<AGENTS.length;i++){
+    document.getElementById('ag-'+i).className='ag-item run';
+    await sleep(360+Math.random()*320);
+    document.getElementById('ag-'+i).className='ag-item done';
+    document.getElementById('ag-tk-'+i).textContent='Complete';
+  }
+  S.reportData=buildDemoReport();
+  await sleep(500);renderReport(S.reportData);goScreen('report');
+}
+
+async function runLiveAgents(){
+  const profile=buildProfileFromAnswers();let result=null;
+  for(let i=0;i<AGENTS.length;i++){
+    document.getElementById('ag-'+i).className='ag-item run';
+    if(i===0){try{result=await callOrchestrator(profile);}catch(e){result=null;}}
+    await sleep(460+Math.random()*340);
+    document.getElementById('ag-'+i).className='ag-item done';
+    document.getElementById('ag-tk-'+i).textContent='Complete';
+  }
+  S.reportData=result||buildDemoReport();
+  if(true){try{await captureClientData(S.reportData,profile);}catch(e){console.warn('Lead capture:',e);}}
+  await sleep(500);renderReport(S.reportData);goScreen('report');
+}
+
+async function captureClientData(report,profile){
+  const payload={timestamp:new Date().toISOString(),source:'UAE_RE_AI',advisor_email:'1angshuman.biswas@gmail.com',investor_name:S.userName,country:S.country,budget:profile.budget||report.investor.budget,objective:profile.objective||report.investor.objective,holding_period:profile.holding||report.investor.holding,personal_use:profile.personalUse||report.investor.personalUse,risk_profile:profile.risk||report.investor.risk,preference:profile.preference||report.investor.preference,golden_visa:profile.residency||report.investor.residency,financing:profile.financing||report.investor.financing,consultation_timing:profile.timing||report.investor.timing,allocation_dubai:report.allocation.dubai.pct+'%',allocation_abudhabi:report.allocation.ad.pct+'%',allocation_rak:report.allocation.rak.pct+'%',property_1:report.properties[0]?.name+' \u2014 '+report.properties[0]?.price+' (Grade '+report.properties[0]?.grade+')',property_2:report.properties[1]?.name+' \u2014 '+report.properties[1]?.price+' (Grade '+report.properties[1]?.grade+')',property_3:report.properties[2]?.name+' \u2014 '+report.properties[2]?.price+' (Grade '+report.properties[2]?.grade+')',readiness_score:report.advisor.readiness+'/100',priority:report.advisor.priority,compliance_flags:report.compliance.filter(c=>c.st!=='ok').map(c=>c.lbl).join(' | ')};
+  const lr=await fetch('/.netlify/functions/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!lr.ok)throw new Error('lead '+lr.status);
+  showToast('\u2713 Assessment saved');
+}
+
+async function callOrchestrator(profile){
+  const r=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind:'brief',country:S.country,profile})});
+  if(!r.ok)throw new Error('AI service '+r.status);
+  const data=await r.json();
+  const txt=(data.text||'').replace(/```json|```/g,'').trim();
+  try{return transformLiveData(JSON.parse(txt),profile);}catch(e){return buildDemoReport();}
+}
+
+function transformLiveData(d,profile){
+  const rd=buildDemoReport();rd.investor.name=S.userName;rd.investor.country=S.country;
+  if(d.emirateAllocation){rd.allocation={dubai:{pct:d.emirateAllocation.dubai?.pct||55,cls:'pct-dubai',name:'Dubai',tag:'Primary allocation',desc:d.emirateAllocation.dubai?.rationale||rd.allocation.dubai.desc},ad:{pct:d.emirateAllocation.abuDhabi?.pct||30,cls:'pct-ad',name:'Abu Dhabi',tag:'Secondary allocation',desc:d.emirateAllocation.abuDhabi?.rationale||rd.allocation.ad.desc},rak:{pct:d.emirateAllocation.rak?.pct||15,cls:'pct-rak',name:'Ras Al Khaimah',tag:'Growth exposure',desc:d.emirateAllocation.rak?.rationale||rd.allocation.rak.desc}};rd.rationale=d.allocationRationale||rd.rationale;}
+  if(d.topProperties?.length){const types=['best','safe','grow'];const bands=['prop-top-band-best','prop-top-band-safe','prop-top-band-grow'];const badges=['pb-best','pb-safe','pb-grow'];const badgeTexts=['Best overall match','Safer alternative','Higher growth'];const numerals=['I','II','III'];rd.properties=d.topProperties.slice(0,3).map((p,i)=>({type:types[i],band:bands[i],badge:badges[i],badgeText:badgeTexts[i],numeral:numerals[i],name:p.name||rd.properties[i].name,loc:p.emirate||'',dev:p.developer||'',price:'AED '+(p.priceAED||0).toLocaleString(),priceNum:p.priceAED||rd.properties[i].priceNum,metrics:[{v:(p.grossYield||0).toFixed(1)+'%',l:'Gross yield'},{v:(p.fiveYrReturn||0)+'%',l:'5yr return'},{v:'Medium',l:'Liquidity'},{v:(p.lifestyleScore||80)+'/100',l:'Lifestyle'}],grade:p.evidenceGrade||'B',gradeText:p.evidenceNote||'',emirate:p.emirate||'',dd:p.ddPoints||rd.properties[i].dd,lifestyle:p.lifeScores||rd.properties[i].lifestyle}));}
+  if(d.complianceChecklist)rd.compliance=d.complianceChecklist.map(c=>({st:c.status||'warn',lbl:c.label,dtl:c.detail,tag:c.status==='ok'?'ct-ok':c.status==='req'?'ct-req':'ct-warn',tagText:c.status==='ok'?'Confirmed':c.status==='req'?'Required':'Action required'}));
+  if(d.advisorBrief){rd.advisor.readiness=d.advisorBrief.readiness||80;rd.advisor.objections=d.advisorBrief.objections||rd.advisor.objections;rd.advisor.nextActions=d.advisorBrief.nextActions||rd.advisor.nextActions;}
+  if(d.rejectedProperties)rd.rejects=d.rejectedProperties;
+  if(d.acquisitionCost)rd.acquisition={price:d.acquisitionCost.purchasePrice||rd.acquisition.price,transfer:d.acquisitionCost.transferFee||rd.acquisition.transfer,agent:d.acquisitionCost.agentFee||rd.acquisition.agent,legal:d.acquisitionCost.legal||rd.acquisition.legal,furnishing:d.acquisitionCost.furnishing||rd.acquisition.furnishing,total:d.acquisitionCost.total||rd.acquisition.total};
+  return rd;
+}
+
+function buildProfileFromAnswers(){const keys=['objective','budget','holding','personalUse','risk','preference','residency','financing','timing'];const res={};keys.forEach((k,i)=>{const idx=S.answers[k];res[k]=(idx!==undefined&&idx>=0)?WIZ[i].opts[idx]?.lbl:'Not specified';});return res;}
+function buildDemoReport(){return JSON.parse(JSON.stringify({investor:DEMO.investor,allocation:DEMO.allocation,rationale:DEMO.rationale,properties:DEMO.properties,rejects:DEMO.rejects,acquisition:DEMO.acquisition,compliance:DEMO.compliance,advisor:DEMO.advisor,portfolio:DEMO.portfolio}));}
+
+function renderReport(d){
+  const inv=d.investor;
+  document.getElementById('rpt-title').textContent='Private Investment Brief \u2014 '+(inv.name||S.userName);
+  document.getElementById('rpt-ctag').textContent=S.country;
+  const c=getCurrency();
+  const currLabel=c.code!=='AED'?' \u00b7 Prices shown in AED + '+c.code:'';
+  document.getElementById('rpt-inv-line').textContent=(inv.name||S.userName)+' \u00b7 '+inv.budget+' \u00b7 '+inv.objective+' \u00b7 '+inv.holding+currLabel;
+  if(inv.residency&&inv.residency.includes('Yes'))document.getElementById('rpt-gv').style.display='';
+
+  // Allocation
+  const al=d.allocation;
+  const emKeys=['dubai','ad','rak'];
+  document.getElementById('alloc-emirates').innerHTML=emKeys.map(k=>{const em=al[k];return '<div class="alloc-em"><div class="alloc-em-pct '+em.cls+'">'+em.pct+'%</div><div class="alloc-em-name">'+em.name+'</div><div class="alloc-em-tag">'+em.tag+'</div><div class="alloc-em-bar"><div class="alloc-em-bar-fill '+(k==='dubai'?'pct-dubai':k==='ad'?'':'') +'" style="background:'+(k==='dubai'?'var(--gold)':k==='ad'?'var(--teal)':'var(--pur)')+'width:0%" data-w="'+em.pct+'%"></div></div><div class="alloc-em-desc">'+em.desc+'</div></div>';}).join('');
+  setTimeout(()=>document.querySelectorAll('.alloc-em-bar-fill').forEach(b=>b.style.width=b.dataset.w),100);
+  document.getElementById('alloc-rationale').innerHTML='<div class="arb-eye">Allocation rationale</div><p>'+d.rationale+'</p>';
+  document.getElementById('alloc-detail').innerHTML=emKeys.map(k=>{const em=al[k];return '<div style="border-left:1.5px solid var(--wire);padding:12px 16px;margin-bottom:10px;background:var(--card)"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:'+(k==='dubai'?'var(--gold)':k==='ad'?'var(--teal)':'var(--pur)')+';margin-bottom:5px">'+em.name+' \u2014 '+em.pct+'%</div><div style="font-size:12px;color:var(--fog);font-weight:300;line-height:1.7">'+em.desc+'</div></div>';}).join('');
+
+  // Properties
+  document.getElementById('prop-list').innerHTML=d.properties.map(p=>{
+    const localStr=toLocal(p.priceNum);
+    const localTag=localStr?'<div style="font-size:12px;color:var(--gold);margin-top:3px">'+localStr+' <span style="color:var(--fog);font-size:10px">'+getCurrency().code+'</span></div>':'';
+    return '<div class="prop-card '+p.type+'"><div class="prop-numeral">'+p.numeral+'</div><div class="prop-top-band '+p.band+'"><div class="prop-band-badge '+p.badge+'">'+p.badgeText+'</div><div class="prop-band-label">'+p.loc.toUpperCase()+'</div></div><div class="prop-body"><div class="prop-name">'+p.name+'</div><div class="prop-loc-dev">'+p.loc+' &nbsp;&middot;&nbsp; '+p.dev+'</div><div class="prop-price-row"><div><div class="prop-price">'+p.price+'</div>'+localTag+'</div><div class="prop-price-lbl" style="margin-left:8px">Purchase price</div></div><div class="prop-metrics-row">'+p.metrics.map(m=>'<div class="pm-cell"><div class="pm-val">'+m.v+'</div><div class="pm-lbl">'+m.l+'</div></div>').join('')+'</div><div class="ev-row"><span class="ev-badge ev-'+p.grade+'">Grade '+p.grade+'</span><span class="ev-text">'+p.gradeText+'</span></div><div class="prop-dd-list"><div class="prop-dd-eye">Due diligence summary</div>'+p.dd.map(x=>'<div class="prop-dd-item">'+x+'</div>').join('')+'</div></div></div>';}).join('');
+  document.getElementById('reject-list').innerHTML=d.rejects.map(r=>'<div class="prj-item" style="margin-top:5px">&bull; '+r+'</div>').join('');
+
+  // Financials
+  const acq=d.acquisition;
+  document.getElementById('fin-prop-name').textContent=d.properties[0].name;
+  const localTotal=toLocal(acq.total);
+  const localPurchase=toLocal(acq.price);
+  const rateNote=c.code!=='AED'?'<div style="font-size:10px;color:var(--mist);margin-top:10px">Indicative conversion at 1 AED \u2248 '+c.rate+' '+c.code+'. Transaction settled in AED. Exchange rate is approximate.</div>':'';
+  document.getElementById('fin-acq').innerHTML='<div class="fin-acq-label">Acquisition cost breakdown \u2014 '+d.properties[0].name+'</div><table class="fin-acq-table"><tr><td style="color:var(--fog)">Purchase price</td><td>AED '+acq.price.toLocaleString()+(localPurchase?' <span style="color:var(--fog);font-size:11px">('+localPurchase+')</span>':'')+'</td></tr><tr><td style="color:var(--fog)">DLD transfer fee (4%)</td><td>AED '+acq.transfer.toLocaleString()+'</td></tr><tr><td style="color:var(--fog)">Agent fee (2%)</td><td>AED '+acq.agent.toLocaleString()+'</td></tr><tr><td style="color:var(--fog)">Legal &amp; admin</td><td>AED '+acq.legal.toLocaleString()+'</td></tr><tr><td style="color:var(--fog)">Furnishing allowance</td><td>AED '+acq.furnishing.toLocaleString()+'</td></tr><tr><td>Total acquisition cost</td><td style="color:var(--gold);font-family:var(--serif);font-size:18px">AED '+acq.total.toLocaleString()+(localTotal?' <span style="font-size:13px;color:var(--gold);opacity:0.8">\u00b7 '+localTotal+' '+c.code+'</span>':'')+'</td></tr></table>'+rateNote;
+  S._bPrice=acq.price;S._bTotal=acq.total;
+  updateFinancials(6.8,5.0);
+
+  // Lifestyle
+  document.getElementById('ls-grid').innerHTML=d.properties.map(p=>{const ls=p.lifestyle;const rows=[['School',ls.school],['Hospital',ls.hospital],['Airport',ls.airport],['Beach',ls.beach],['Marina',ls.marina],['Commute',ls.commute],['Privacy',ls.privacy]];const avg=Math.round(Object.values(ls).reduce((a,b)=>a+b,0)/Object.values(ls).length);return '<div class="ls-col"><div class="ls-prop-name">'+p.name.split(' \u2014 ')[0]+'</div><div class="ls-emirate">'+p.emirate+'</div><div class="ls-score-big">'+avg+'<span class="ls-score-unit">/100</span></div>'+rows.map(([k,v])=>'<div class="ls-row"><div class="ls-key">'+k+'</div><div class="ls-track"><div class="ls-fill" style="width:'+v+'%"></div></div><div class="ls-num">'+v+'</div></div>').join('')+'</div>';}).join('');
+
+  // Compliance
+  document.getElementById('comp-list').innerHTML=d.compliance.map(c=>{const cls=c.st==='ok'?'ci-ok':c.st==='req'?'ci-req':'ci-warn';return '<div class="comp-row"><div class="comp-indicator '+cls+'"></div><div class="comp-right"><div class="comp-lbl">'+c.lbl+'</div><div class="comp-dtl">'+c.dtl+'</div><span class="comp-tag '+c.tag+'">'+c.tagText+'</span></div></div>';}).join('');
+
+  renderAdvisorConsole(d.advisor,d.investor);
+  renderPortfolio(d.portfolio);
+}
+
+function updateFinancials(yld,cap){
+  const price=S._bPrice||3850000,total=S._bTotal||4249000;
+  const ar=price*(yld/100);const svc=Math.round(price*0.01),mgmt=Math.round(ar*0.1),vac=Math.round(ar*0.05);const net=ar-svc-mgmt-vac;
+  const c=getCurrency();
+  function locTag(aed){const l=toLocal(aed);return l?' <span style="color:var(--fog);font-size:10px">('+l+')</span>':'';}
+  function sc(cm,rm,lbl){
+    const ev=price*Math.pow(1+(cap*cm)/100,5);
+    const tr=net*rm*5;
+    const tot=ev+tr-total;
+    const pct=((tot/total)*100).toFixed(1);
+    const localTot=toLocal(Math.round(tot));
+    const localIncome=toLocal(Math.round(net*rm));
+    const localExit=toLocal(Math.round(ev));
+    return '<div class="fin-sc fc-'+lbl+'">'
+      +'<div class="fin-sc-eye">'+lbl+'</div>'
+      +'<div class="fin-sc-row"><span class="fsk">Annual gross rent</span><span class="fsv">AED '+Math.round(ar*rm).toLocaleString()+'</span></div>'
+      +'<div class="fin-sc-row"><span class="fsk">Net annual income</span><span class="fsv">AED '+Math.round(net*rm).toLocaleString()+locTag(Math.round(net*rm))+'</span></div>'
+      +'<div class="fin-sc-row"><span class="fsk">Net yield</span><span class="fsv">'+((net*rm/price)*100).toFixed(1)+'%</span></div>'
+      +'<div class="fin-sc-row"><span class="fsk">Exit value (5yr)</span><span class="fsv">AED '+Math.round(ev).toLocaleString()+locTag(Math.round(ev))+'</span></div>'
+      +'<div class="fin-sc-row" style="margin-top:6px;padding-top:8px;border-top:0.5px solid var(--mist)">'
+        +'<span class="fsk">Total net return</span>'
+        +'<span><div class="fin-total-val">'+pct+'%</div>'
+        +(localTot?'<div style="font-size:11px;color:var(--fog);margin-top:2px">'+localTot+' '+c.code+'</div>':'')
+        +'</span>'
+      +'</div></div>';
+  }
+  document.getElementById('fin-grid').innerHTML=sc(0.7,0.85,'conservative')+sc(1.0,1.0,'base')+sc(1.4,1.15,'optimistic');
+}
+
+function updateYield(v){document.getElementById('yield-val').textContent=parseFloat(v).toFixed(1)+'%';const cap=parseFloat(document.querySelectorAll('input[type=range]')[1]?.value||5);updateFinancials(parseFloat(v),cap);}
+function updateCap(v){document.getElementById('cap-val').textContent=parseFloat(v).toFixed(1)+'%';const yld=parseFloat(document.querySelectorAll('input[type=range]')[0]?.value||6.8);updateFinancials(yld,parseFloat(v));}
+
+function renderAdvisorConsole(adv,inv){
+  const rows=[['Investor',inv.name||S.userName],['Market',S.country],['Budget',inv.budget],['Objective',inv.objective],['Holding period',inv.holding],['Personal use',inv.personalUse],['Risk profile',inv.risk],['Financing',inv.financing],['Consultation timing',inv.timing],['Jurisdiction',inv.jurisdiction||'See compliance tab'],['Funding note',inv.fundingSource||'See compliance tab']];
+  document.getElementById('brief-grid').innerHTML=rows.map(([k,v])=>'<div class="brow"><div class="bk">'+k+'</div><div class="bv">'+(v||'\u2014')+'</div></div>').join('');
+  const score=adv.readiness||84;
+  document.getElementById('rs-score').textContent=score+' / 100';
+  document.getElementById('rs-fill').style.width=score+'%';
+  document.getElementById('adv-priority').textContent=adv.priority||'High priority';
+  document.getElementById('obj-list').innerHTML=(adv.objections||[]).map(o=>'<div class="obj-item">'+o+'</div>').join('');
+  document.getElementById('na-list').innerHTML=(adv.nextActions||[]).map((a,i)=>'<div class="na-item"><div class="na-num">'+(i+1)+'</div><div class="na-text">'+a+'</div></div>').join('');
+  document.getElementById('spec-grid').innerHTML=(adv.specialists||DEMO.advisor.specialists).map(s=>'<div class="spec-cell"><div class="spec-ic">'+s.ic+'</div><div class="spec-nm">'+s.nm+'</div><div class="spec-ds">'+s.ds+'</div></div>').join('');
+  document.getElementById('conv-body').innerHTML=adv.convStructure||DEMO.advisor.convStructure;
+}
+
+function renderPortfolio(port){
+  if(!port)return;
+  document.getElementById('port-kpis').innerHTML=(port.kpis||[]).map(s=>'<div class="kpi"><div class="kpi-val">'+s.v+'</div><div class="kpi-chg '+(s.up?'kpi-up':'kpi-dn')+'">'+s.c+'</div><div class="kpi-lbl">'+s.l+'</div></div>').join('');
+  document.getElementById('port-alerts').innerHTML=(port.alerts||[]).map(a=>'<div class="al-item '+a.type+'"><div class="al-accent"></div><div class="al-body"><div class="al-title">'+a.t+'</div><div class="al-desc">'+a.d+'</div></div></div>').join('');
+  document.getElementById('hs-list').innerHTML=(port.hs||[]).map(h=>'<div class="hsc"><div class="hsc-head"><div class="hsc-prop">'+h.prop+'</div><span class="hsc-rec '+h.cls+'">'+h.rec+'</span></div><div class="hsc-metrics">'+h.metrics.map(m=>'<div class="hm"><div class="hm-v">'+m.v+'</div><div class="hm-l">'+m.l+'</div></div>').join('')+'</div><div class="hsc-rationale">'+h.rationale+'</div></div>').join('');
+  document.getElementById('opp-rows').innerHTML=(port.opps||[]).map(o=>'<div class="opp-row"><div><div class="opp-name">'+o.name+'</div><div class="opp-desc">'+o.desc+'</div></div><div style="text-align:right"><div class="opp-yield">'+o.yield+'</div><div class="opp-type">'+o.type+'</div></div></div>').join('');
+}
+
+function loadPortfolio(){if(S.reportData?.portfolio)renderPortfolio(S.reportData.portfolio);}
+
+async function sendChatMsg(){const inp=document.getElementById('chat-in');const q=inp.value.trim();if(!q)return;inp.value='';sendQ(q);}
+async function sendQ(q){
+  addMsg(q,'user');
+  if(S.mode==='live'){
+    addMsg('Reviewing your brief\u2026','thinking');
+    try{
+      const d=S.reportData||buildDemoReport();
+      const ctx='Investor: '+(d.investor.name||S.userName)+', '+S.country+'. Allocation: Dubai '+d.allocation.dubai.pct+'% / Abu Dhabi '+d.allocation.ad.pct+'% / RAK '+d.allocation.rak.pct+'%. Lead property: '+d.properties[0].name+' at '+d.properties[0].price+' Grade '+d.properties[0].grade+'.';
+      const r=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind:'chat',q,ctx})});
+      if(!r.ok)throw new Error('AI service '+r.status);
+      const data=await r.json();
+      removeThinking();addMsg(data.text||'Unable to retrieve an answer.','ai');
+    }catch(e){removeThinking();addMsg(getDemoAnswer(q),'ai');}
+  }else{await sleep(700);addMsg(getDemoAnswer(q),'ai');}
+}
+
+function getDemoAnswer(q){
+  const l=q.toLowerCase();
+  if(l.includes('dubai')&&l.includes('abu'))return 'Dubai scores higher for your profile due to deeper secondary-market liquidity and rental income certainty. Emaar Beachfront independently qualifies for the Golden Visa at AED 3.85M. Abu Dhabi takes 30% for family-use stability and lower supply risk \u2014 a balanced allocation, not a binary choice.';
+  if(l.includes('rent')&&(l.includes('15')||l.includes('drop')))return 'A 15% yield compression from 6.8% to 5.8% reduces net annual income from ~AED 195K to ~AED 166K on Emaar Beachfront. The 5-year base-case total return shifts from ~37% to ~30%. Capital appreciation remains the larger return driver \u2014 the investment thesis holds.';
+  if(l.includes('golden')||l.includes('visa'))return 'Both Emaar Beachfront (AED 3.85M) and Saadiyat Grove (AED 3.25M) qualify for the UAE 10-year Golden Visa. Off-plan properties qualify at the 50% payment stage; ready properties qualify immediately. Confirm Indian tax residency implications with your CA before applying.';
+  if(l.includes('exit')||l.includes('5 year')||l.includes('five year'))return 'At year 5, Emaar Beachfront will carry a full 3-year rental history \u2014 the ideal exit profile for UAE buyers. Dubai Harbour averages 30\u201360 day time-to-sale for comparable 2BR units. The 12-month SPA lock expires early 2027. Conservative exit AED 4.37M, base case AED 4.94M.';
+  if(l.includes('family'))return 'For family use, Saadiyat Grove scores highest: 94/100 on international schools, 88/100 healthcare, 90/100 privacy. If personal use exceeds 30% of the year, we recommend shifting Saadiyat to the primary allocation. Confirm your intended annual weeks to refine the lifestyle weighting.';
+  if(l.includes('verif'))return 'Independently verified items: RERA registrations (live DLD data), Emaar escrow at Dubai Islamic Bank, Aldar 31/31 delivery record (ADCE), service charge rates (DLD registry). Developer estimates and not independently confirmed: Wynn RAK 2027 opening date, 5-year return forecasts \u2014 these are clearly labelled as such in your brief.';
+  return 'Based on your verified brief: all three shortlisted properties cleared the hard eligibility gates. Your primary action before committing is resolving the FEMA / LRS source-of-funds workflow with a cross-border tax adviser. Everything else is evidence-backed and ready for your consultation.';
+}
+
+function addMsg(txt,type){const b=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='cm '+type;d.textContent=txt;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function removeThinking(){const b=document.getElementById('chat-msgs');const t=b.querySelector('.thinking');if(t)b.removeChild(t);}
+
+function showRTab(id,el){document.querySelectorAll('.rtab-panel').forEach(r=>r.classList.remove('on'));document.querySelectorAll('.rtab-btn').forEach(r=>r.classList.remove('on'));document.getElementById('rp-'+id).classList.add('on');el.classList.add('on');}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function downloadMemo(){
+  const d=S.reportData||buildDemoReport();
+  const cc=getCurrency();
+  const fxNote=cc.code!=='AED'?'\nCurrency note: 1 AED \u2248 '+cc.rate+' '+cc.code+' (indicative). Transaction settled in AED.':'';
+  const propsWithLocal=d.properties.map((p,i)=>{const loc=toLocal(p.priceNum);return (i+1)+'. '+p.name+' \u2014 '+p.price+(loc?' ('+loc+' '+cc.code+')':'')+' (Evidence Grade '+p.grade+')';});
+  const txt='UAE_RE_AI \u2014 PRIVATE INVESTMENT BRIEF\n'+'='.repeat(54)+'\nInvestor: '+(d.investor.name||S.userName)+'\nCountry: '+S.country+'\nBase currency: AED'+(cc.code!=='AED'?' / '+cc.code:'')+'\nBudget: '+d.investor.budget+'\nObjective: '+d.investor.objective+'\n\nEMIRATE ALLOCATION\nDubai: '+d.allocation.dubai.pct+'% \u00b7 Abu Dhabi: '+d.allocation.ad.pct+'% \u00b7 RAK: '+d.allocation.rak.pct+'%\n'+d.rationale+'\n\nPROPERTY SHORTLIST\n'+propsWithLocal.join('\n')+'\n\nCOMPLIANCE ITEMS REQUIRING ACTION\n'+d.compliance.filter(c=>c.st!=='ok').map(c=>'- '+c.lbl+': '+c.tagText).join('\n')+'\n\nADVISOR READINESS: '+d.advisor.readiness+'/100\nPRIORITY: '+d.advisor.priority+fxNote+'\n\nGenerated by UAE_RE_AI \u2014 Private Property Intelligence\n'+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'\nStrictly confidential. Not financial, legal or tax advice.';
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download='UAE_RE_AI_Private_Brief_'+Date.now()+'.txt';
+  a.click();
+}
+
+function showToast(msg){const t=document.getElementById('app-toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+
+// ═══════════════════════════════════════════════
+// LUXURY INTERACTIONS
+// ═══════════════════════════════════════════════
+
+// Scroll reveal — IntersectionObserver
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+function initReveal() {
+  document.querySelectorAll('.reveal').forEach(el => {
+    el.classList.remove('visible');
+    revealObserver.observe(el);
+  });
+}
+
+// Animated stat counters
+function runCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1400;
+    const step = Math.ceil(target / (duration / 16));
+    let current = 0;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current + suffix;
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  });
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    initReveal();
+    runCounters();
+  }, 200);
+});
+
+// Re-run after screen transitions
+const _origGoScreen = goScreen;
+function goScreen(id) {
+  _origGoScreen(id);
+  setTimeout(initReveal, 150);
+}
+
+// Trigger gold-rule on initial load
+setTimeout(()=>document.getElementById('gold-rule').classList.add('drawn'),200);
+</script>
+</body>
+</html>
