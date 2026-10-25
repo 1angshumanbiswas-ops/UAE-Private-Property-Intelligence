@@ -26,6 +26,8 @@ export default async (req) => {
 
   const out = {};
   for (const f of FIELDS) out[f] = Array.isArray(body[f]) ? body[f].map(safe).join('; ') : safe(body[f]);
+  out.email = email;
+  out.mobile = mobile; // validated above (digits, + ( ) - space only)
   out.timestamp = new Date().toISOString();
   out.source = 'UAE_RE_AI';
   out.advisor_email = process.env.ADVISOR_EMAIL || out.advisor_email;
