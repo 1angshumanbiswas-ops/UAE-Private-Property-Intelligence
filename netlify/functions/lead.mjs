@@ -3,7 +3,7 @@ import { json, guard, clip } from './_shared.mjs';
 
 const FIELDS = ['timestamp','source','advisor_email','investor_name','country','budget','objective','holding_period',
   'personal_use','risk_profile','preference','golden_visa','financing','consultation_timing','allocation_dubai',
-  'allocation_abudhabi','allocation_rak','property_1','property_2','property_3','readiness_score','priority','compliance_flags'];
+  'allocation_abudhabi','allocation_rak','property_1','property_2','property_3','readiness_score','priority','compliance_flags','email','mobile','consent'];
 
 // Neutralise spreadsheet formula injection.
 const safe = (v) => { const s = clip(v, 500); return /^[=+\-@]/.test(s) ? "'" + s : s; };
@@ -16,6 +16,13 @@ export default async (req) => {
 
   let body;
   try { body = await req.json(); } catch { return json({ error: 'Bad JSON' }, 400); }
+
+  const email = clip(body.email, 120).trim();
+  const mobile = clip(body.mobile, 30).trim();
+  const digits = mobile.replace(/\D/g, '');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !/^\+?[0-9 ()\-]+$/.test(mobile) || digits.length < 8 || digits.length > 15) {
+    return json({ error: 'Valid email and mobile number are required' }, 400);
+  }
 
   const out = {};
   for (const f of FIELDS) out[f] = Array.isArray(body[f]) ? body[f].map(safe).join('; ') : safe(body[f]);

@@ -533,10 +533,9 @@ body::before{
   </div>
   <div class="tb-right">
     <div class="mode-wrap">
-      <div class="mode-opt on" id="md-demo" onclick="setMode('demo')">Demo</div>
-      <div class="mode-opt" id="md-live" onclick="setMode('live')">Live</div>
+      <div class="mode-opt" id="md-demo" onclick="setMode('demo')">Demo</div>
+      <div class="mode-opt on" id="md-live" onclick="setMode('live')">Live</div>
     </div>
-    <button class="tb-btn" onclick="openModal('apiModal')">Live&nbsp;mode</button>
   </div>
 </div>
 <div class="gold-rule" id="gold-rule"></div>
@@ -804,6 +803,28 @@ body::before{
   </div>
 </div>
 
+<!-- ===== CONTACT MODAL ===== -->
+<div class="modal" id="contactModal">
+  <div class="mbox">
+    <div class="mbox-eye">Final step</div>
+    <div class="mbox-title">Where should we send your private brief?</div>
+    <div class="mbox-sub">Your advisor will follow up using these details. They are shared only with your advisor and are never sold.</div>
+    <div class="field-wrap"><label class="field-lbl">Full name</label>
+      <input class="field" type="text" id="ct-name" autocomplete="name" placeholder="e.g. Vikram Mehta"></div>
+    <div class="field-wrap"><label class="field-lbl">Email address</label>
+      <input class="field" type="email" id="ct-email" autocomplete="email" placeholder="you@example.com"></div>
+    <div class="field-wrap"><label class="field-lbl">Mobile number (with country code)</label>
+      <input class="field" type="tel" id="ct-mobile" autocomplete="tel" placeholder="+971 50 123 4567"></div>
+    <label style="display:flex;gap:10px;align-items:flex-start;font-size:11px;color:var(--fog);line-height:1.6;font-weight:300;cursor:pointer">
+      <input type="checkbox" id="ct-consent" style="margin-top:3px"> I agree to be contacted by my advisor about this assessment.</label>
+    <div class="mbox-actions">
+      <button class="btn-primary" style="flex:1;font-size:10px;letter-spacing:2px;padding:12px" onclick="submitContact()">Generate my brief</button>
+      <button class="btn-outline" style="padding:12px 20px" onclick="closeModal('contactModal')">Back</button>
+    </div>
+    <div class="mbox-status" id="ct-status" style="color:#e07b6a"></div>
+  </div>
+</div>
+
 <!-- ===== API MODAL ===== -->
 <div class="modal" id="apiModal">
   <div class="mbox">
@@ -858,7 +879,6 @@ body::before{
       </div>
       <div class="footer-col">
         <div class="footer-col-title">Private Office</div>
-        <div class="footer-link" onclick="openModal('apiModal')">Advisor Login</div>
         <div class="footer-link">By Invitation Only</div>
       </div>
     </div>
@@ -878,7 +898,7 @@ body::before{
 </footer>
 
 <script>
-const S={mode:'demo',apiKey:'',webhookUrl:'',userName:'Valued Investor',country:'India/NRI',answers:{},wizStep:0,reportData:null,_bPrice:3850000,_bTotal:4249000,currency:'INR',fxRate:23.5};
+const S={mode:'live',apiKey:'',webhookUrl:'',userName:'Valued Investor',country:'India/NRI',answers:{},wizStep:0,reportData:null,_bPrice:3850000,_bTotal:4249000,currency:'INR',fxRate:23.5};
 
 // Currency config — symbol, code, AED rate, locale, compact suffix threshold
 const CURRENCIES={
@@ -981,7 +1001,7 @@ const DEMO={
   portfolio:{kpis:[{v:'AED 8.1M',c:'+8.2%',l:'Portfolio current value',up:true},{v:'AED 258K',c:'+4.6%',l:'Annual rental income (projected)',up:true},{v:'6.4%',c:'-0.3%',l:'Net portfolio yield',up:false},{v:'Q1 2026',c:'On track',l:'Next handover date',up:true}],alerts:[{type:'al-grn',t:'Emaar Beachfront construction on schedule',d:'Latest progress report: 72% complete. Handover confirmed Q1 2026. No delays flagged in the RERA system.'},{type:'al-act',t:'Pre-handover snagging inspection recommended',d:'Engage an independent snagging inspector 30 days before the Q1 2026 handover. Three approved partners are available.'},{type:'al-info',t:'Saadiyat comparable sales up 7.2% year-on-year',d:'Aldar Q3 data: Saadiyat 2BR units averaging AED 3.48M. Your entry was AED 3.25M. Paper gain to date: AED 230,000.'},{type:'al-warn',t:'RAK Wynn resort opening revised to 2027',d:'Wynn Resorts confirmed Q2 2027 opening (revised from 2026). The RAK growth thesis remains intact \u2014 re-price near-term return expectations.'}],hs:[{prop:'Emaar Beachfront \u2014 Marina Shores',rec:'HOLD',cls:'rec-hold',metrics:[{v:'AED 4.1M',l:'Current value'},{v:'+6.5%',l:'Capital gain'},{v:'6.8%',l:'Projected yield'},{v:'Q1 2026',l:'Handover'}],rationale:'Strong hold. Construction on schedule. Once tenanted post-handover, this asset should deliver AED 258\u2013280K annual rental income. Dubai Harbour zone shows 30\u201360 day time-to-sale for comparable units. Do not exit before the 12-month SPA lock expires in early 2027. Review hold / sell position at the 3-year mark (2028).'},{prop:'Aldar \u2014 Saadiyat Grove',rec:'HOLD',cls:'rec-hold',metrics:[{v:'AED 3.48M',l:'Current value'},{v:'+7.1%',l:'Capital gain'},{v:'5.9%',l:'Gross yield'},{v:'Ready',l:'Status'}],rationale:'Ready asset generating rental income. Saadiyat Island has the Louvre expansion catalyst running through 2026 and planned supply controls from TDIC. Hold for the full 7-year horizon. Seasonal personal use of 4\u20136 weeks per year does not materially impair rental income if a professional manager is engaged.'},{prop:'RAK Properties \u2014 Mina Al Arab',rec:'HOLD / REVIEW 2027',cls:'rec-refin',metrics:[{v:'AED 2.52M',l:'Current value'},{v:'+5.0%',l:'Capital gain'},{v:'7.4%',l:'Proj. yield'},{v:'Q3 2026',l:'Delivery'}],rationale:'Hold through the Wynn RAK opening, now confirmed 2027. The tourism growth thesis is intact but the timeline has extended. Do not exit before the resort catalyst appears in transactional data. Review in H1 2027 \u2014 if Mina Al Arab comparable sales are not moving within 6 months of opening, consider a structured exit to recycle capital into Abu Dhabi Grade A stock.'}],opps:[{name:'Dubai Hills Estate \u2014 Sidra Villas IV',desc:'Emaar \u00b7 3BR \u00b7 AED 4.2M \u00b7 Grade A evidence',yield:'5.6%',type:'Capital growth'},{name:'Yas Island \u2014 Noya Viva, Abu Dhabi',desc:'Aldar \u00b7 4BR \u00b7 AED 3.8M \u00b7 Completed 2024 \u00b7 Golf + F1 proximity',yield:'6.1%',type:'Ready income asset'},{name:'RAK \u2014 Al Hamra Village Golf',desc:'Secondary market \u00b7 3BR villa \u00b7 AED 1.9M \u00b7 Freehold confirmed',yield:'8.2%',type:'High-yield growth'}]}
 };
 
-function goScreen(id){
+function _goScreenBase(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.getElementById('scr-'+id).classList.add('on');
   const showNav=!['landing','assessment','processing'].includes(id);
@@ -992,7 +1012,7 @@ function goScreen(id){
   setTimeout(()=>rule.classList.add('drawn'),80);
 }
 
-function setMode(m){S.mode=m;document.getElementById('md-demo').classList.toggle('on',m==='demo');document.getElementById('md-live').classList.toggle('on',m==='live');if(m==='live'&&!S.liveReady)openModal('apiModal');}
+function setMode(m){S.mode=m;document.getElementById('md-demo').classList.toggle('on',m==='demo');document.getElementById('md-live').classList.toggle('on',m==='live');}
 
 function saveApiKey(){
   const n=document.getElementById('nameInput').value.trim();
@@ -1038,13 +1058,37 @@ function selectOpt(i,el){document.querySelectorAll('.wiz-opt').forEach(o=>o.clas
 function wizNav(dir){
   if(dir===1){
     if(S.answers[WIZ[S.wizStep].key]===undefined)S.answers[WIZ[S.wizStep].key]=0;
-    if(S.wizStep===WIZ.length-1){runOrchestrator();return;}
+    if(S.wizStep===WIZ.length-1){openContact();return;}
     S.wizStep++;
   }else{if(S.wizStep>0)S.wizStep--;}
   renderWizStep();
 }
 
 function wizSkip(){S.answers[WIZ[S.wizStep].key]=-1;wizNav(1);}
+
+function openContact(){
+  const c=S.contact||{};
+  document.getElementById('ct-name').value=c.name||(S.userName!=='Valued Investor'?S.userName:'');
+  document.getElementById('ct-email').value=c.email||'';
+  document.getElementById('ct-mobile').value=c.mobile||'';
+  document.getElementById('ct-status').textContent='';
+  openModal('contactModal');
+}
+function submitContact(){
+  const name=document.getElementById('ct-name').value.trim();
+  const email=document.getElementById('ct-email').value.trim();
+  const mobile=document.getElementById('ct-mobile').value.trim();
+  const ok=document.getElementById('ct-consent').checked;
+  const st=document.getElementById('ct-status');
+  const digits=mobile.replace(/\D/g,'');
+  if(name.length<2){st.textContent='Please enter your full name.';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){st.textContent='Please enter a valid email address.';return;}
+  if(!/^\+?[0-9 ()\-]+$/.test(mobile)||digits.length<8||digits.length>15){st.textContent='Please enter a valid mobile number with country code.';return;}
+  if(!ok){st.textContent='Please tick the consent box to continue.';return;}
+  S.contact={name,email,mobile};S.userName=name;
+  closeModal('contactModal');
+  runOrchestrator();
+}
 
 async function runOrchestrator(){
   goScreen('processing');
@@ -1061,6 +1105,7 @@ async function runDemoAgents(){
     document.getElementById('ag-tk-'+i).textContent='Complete';
   }
   S.reportData=buildDemoReport();
+  try{await captureClientData(S.reportData,buildProfileFromAnswers());}catch(e){console.warn('Lead capture:',e);}
   await sleep(500);renderReport(S.reportData);goScreen('report');
 }
 
@@ -1079,7 +1124,7 @@ async function runLiveAgents(){
 }
 
 async function captureClientData(report,profile){
-  const payload={timestamp:new Date().toISOString(),source:'UAE_RE_AI',advisor_email:'1angshuman.biswas@gmail.com',investor_name:S.userName,country:S.country,budget:profile.budget||report.investor.budget,objective:profile.objective||report.investor.objective,holding_period:profile.holding||report.investor.holding,personal_use:profile.personalUse||report.investor.personalUse,risk_profile:profile.risk||report.investor.risk,preference:profile.preference||report.investor.preference,golden_visa:profile.residency||report.investor.residency,financing:profile.financing||report.investor.financing,consultation_timing:profile.timing||report.investor.timing,allocation_dubai:report.allocation.dubai.pct+'%',allocation_abudhabi:report.allocation.ad.pct+'%',allocation_rak:report.allocation.rak.pct+'%',property_1:report.properties[0]?.name+' \u2014 '+report.properties[0]?.price+' (Grade '+report.properties[0]?.grade+')',property_2:report.properties[1]?.name+' \u2014 '+report.properties[1]?.price+' (Grade '+report.properties[1]?.grade+')',property_3:report.properties[2]?.name+' \u2014 '+report.properties[2]?.price+' (Grade '+report.properties[2]?.grade+')',readiness_score:report.advisor.readiness+'/100',priority:report.advisor.priority,compliance_flags:report.compliance.filter(c=>c.st!=='ok').map(c=>c.lbl).join(' | ')};
+  const payload={timestamp:new Date().toISOString(),source:'UAE_RE_AI',advisor_email:'1angshuman.biswas@gmail.com',investor_name:S.userName,email:(S.contact||{}).email||'',mobile:(S.contact||{}).mobile||'',consent:'yes',country:S.country,budget:profile.budget||report.investor.budget,objective:profile.objective||report.investor.objective,holding_period:profile.holding||report.investor.holding,personal_use:profile.personalUse||report.investor.personalUse,risk_profile:profile.risk||report.investor.risk,preference:profile.preference||report.investor.preference,golden_visa:profile.residency||report.investor.residency,financing:profile.financing||report.investor.financing,consultation_timing:profile.timing||report.investor.timing,allocation_dubai:report.allocation.dubai.pct+'%',allocation_abudhabi:report.allocation.ad.pct+'%',allocation_rak:report.allocation.rak.pct+'%',property_1:report.properties[0]?.name+' \u2014 '+report.properties[0]?.price+' (Grade '+report.properties[0]?.grade+')',property_2:report.properties[1]?.name+' \u2014 '+report.properties[1]?.price+' (Grade '+report.properties[1]?.grade+')',property_3:report.properties[2]?.name+' \u2014 '+report.properties[2]?.price+' (Grade '+report.properties[2]?.grade+')',readiness_score:report.advisor.readiness+'/100',priority:report.advisor.priority,compliance_flags:report.compliance.filter(c=>c.st!=='ok').map(c=>c.lbl).join(' | ')};
   const lr=await fetch('/.netlify/functions/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   if(!lr.ok)throw new Error('lead '+lr.status);
   showToast('\u2713 Assessment saved');
@@ -1304,7 +1349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Re-run after screen transitions
-const _origGoScreen = goScreen;
+const _origGoScreen = _goScreenBase;
 function goScreen(id) {
   _origGoScreen(id);
   setTimeout(initReveal, 150);
