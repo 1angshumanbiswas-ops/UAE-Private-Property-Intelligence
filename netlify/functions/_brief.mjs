@@ -10,7 +10,7 @@ export const SEARCH_DOMAINS = [
   'emaar.com', 'aldar.com', 'damacproperties.com', 'sobharealty.com', 'nakheel.com', 'meraas.com', 'azizidevelopments.com',
   'binghatti.com', 'danubeproperties.com', 'omniyat.com', 'imkan.ae', 'rakproperties.com', 'marjanisland.com', 'wynnresortsrak.com', 'ellingtongroup.com', 'select-group.ae',
   // News / market data
-  'gulfnews.com', 'khaleejtimes.com', 'thenationalnews.com', 'arabianbusiness.com', 'zawya.com', 'gulfbusiness.com', 'propertymonitor.ae', 'reuters.com', 'bloomberg.com',
+  'gulfnews.com', 'khaleejtimes.com', 'thenationalnews.com', 'arabianbusiness.com', 'zawya.com', 'gulfbusiness.com', 'propertymonitor.ae',
 ];
 
 export function briefPrompt(profile, country) {
